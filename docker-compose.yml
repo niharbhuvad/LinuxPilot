@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: linuxai-backend
+    restart: always
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql+asyncpg://linuxai:linuxaipass@db:5432/linuxaidb
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - SECRET_KEY=${SECRET_KEY:-change-me-to-a-64-character-random-secret-key}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    volumes:
+      - /var/run/dbus:/var/run/dbus # For systemd interaction if on host
+      - /var/log:/var/log:ro        # Read-only access to host logs
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: linuxai-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:15-alpine
+    container_name: linuxai-db
+    restart: always
+    environment:
+      POSTGRES_USER: linuxai
+      POSTGRES_PASSWORD: linuxaipass
+      POSTGRES_DB: linuxaidb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

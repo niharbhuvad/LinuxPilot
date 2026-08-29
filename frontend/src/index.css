@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Global Reset ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  @apply bg-terminal-bg text-terminal-text font-sans;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #484f58; }
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Terminal Block ─────────────────────────────────────────────────────────── */
+.terminal-block {
+  @apply bg-terminal-surface border border-terminal-border rounded-lg font-mono text-sm overflow-x-auto;
+}
+
+/* ── Glass Card ─────────────────────────────────────────────────────────────── */
+.glass-card {
+  @apply bg-terminal-surface border border-terminal-border rounded-xl;
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.glass-card:hover {
+  @apply border-terminal-blue;
+  box-shadow: 0 0 20px rgba(77, 159, 255, 0.1);
+}
+
+/* ── Metric Card ─────────────────────────────────────────────────────────────── */
+.metric-card {
+  @apply glass-card p-5 flex flex-col gap-2;
+}
+
+/* ── Status Indicators ─────────────────────────────────────────────────────── */
+.status-active   { @apply text-terminal-green; }
+.status-failed   { @apply text-terminal-red; }
+.status-inactive { @apply text-terminal-muted; }
+.status-warning  { @apply text-terminal-yellow; }
+
+/* ── Risk Badge ─────────────────────────────────────────────────────────────── */
+.risk-low    { @apply bg-green-900/40 text-terminal-green border border-green-700/50; }
+.risk-medium { @apply bg-yellow-900/40 text-terminal-yellow border border-yellow-700/50; }
+.risk-high   { @apply bg-red-900/40 text-terminal-red border border-red-700/50; }
+.risk-blocked{ @apply bg-gray-800/80 text-terminal-muted border border-gray-600/50; }
+
+/* ── Spinner ─────────────────────────────────────────────────────────────────── */
+.spinner {
+  border: 2px solid rgba(77, 159, 255, 0.2);
+  border-top-color: #4d9fff;
+  border-radius: 50%;
+  width: 16px; height: 16px;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Typing Indicator ────────────────────────────────────────────────────────── */
+.typing-dot {
+  @apply w-2 h-2 bg-terminal-blue rounded-full;
+  animation: typingBounce 1.4s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40% { transform: translateY(-8px); opacity: 1; }
+}
+
+/* ── Progress Bar ─────────────────────────────────────────────────────────────── */
+.progress-bar { @apply h-2 rounded-full bg-terminal-border overflow-hidden; }
+.progress-bar-fill { @apply h-full rounded-full transition-all duration-700; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────────── */
+.sidebar-item {
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-terminal-muted
+         hover:text-terminal-text hover:bg-terminal-border/50 transition-all duration-150 cursor-pointer;
+}
+.sidebar-item.active {
+  @apply text-terminal-blue bg-blue-900/20 border-l-2 border-terminal-blue;
+}
+
+/* ── Button ─────────────────────────────────────────────────────────────────── */
+.btn-primary {
+  @apply inline-flex items-center gap-2 px-4 py-2 bg-terminal-blue text-terminal-bg 
+         font-semibold text-sm rounded-lg hover:opacity-90 active:scale-95 transition-all duration-150;
+}
+.btn-danger {
+  @apply inline-flex items-center gap-2 px-4 py-2 bg-terminal-red text-white 
+         font-semibold text-sm rounded-lg hover:opacity-90 active:scale-95 transition-all duration-150;
+}
+.btn-ghost {
+  @apply inline-flex items-center gap-2 px-4 py-2 border border-terminal-border text-terminal-muted 
+         font-medium text-sm rounded-lg hover:text-terminal-text hover:border-terminal-text transition-all duration-150;
+}
+
+/* ── Chat Bubble ─────────────────────────────────────────────────────────────── */
+.chat-bubble-user {
+  @apply bg-blue-900/30 border border-blue-700/40 rounded-xl rounded-br-sm px-4 py-3;
+}
+.chat-bubble-ai {
+  @apply bg-terminal-surface border border-terminal-border rounded-xl rounded-bl-sm px-4 py-3;
+}
+
+/* ── Health Score Ring ────────────────────────────────────────────────────────── */
+.health-ring { transition: stroke-dasharray 1s ease; }
+
+/* ── Glow Effects ──────────────────────────────────────────────────────────────── */
+.glow-green  { box-shadow: 0 0 15px rgba(0, 255, 159, 0.2); }
+.glow-blue   { box-shadow: 0 0 15px rgba(77, 159, 255, 0.2); }
+.glow-red    { box-shadow: 0 0 15px rgba(255, 77, 79, 0.3); }
+.glow-yellow { box-shadow: 0 0 15px rgba(255, 214, 102, 0.2); }
+
+/* ── Real Linux Terminal Themes & Styling ─────────────────────────────────────── */
+
+/* Ubuntu Aubergine Theme */
+.theme-ubuntu {
+  --term-bg: #300a24;
+  --term-surface: rgba(48, 10, 36, 0.85);
+  --term-viewport: #1e0517;
+  --term-border: #5e2750;
+  --term-text: #ffffff;
+  --term-prompt-user: #8ae234;
+  --term-prompt-host: #729fcf;
+  --term-prompt-path: #e9b96e;
+  --term-accent: #e95420;
+}
+
+/* Kali Cyber Cyan Theme */
+.theme-kali {
+  --term-bg: #0d1117;
+  --term-surface: rgba(13, 17, 23, 0.9);
+  --term-viewport: #05080c;
+  --term-border: #1f293d;
+  --term-text: #00f0ff;
+  --term-prompt-user: #ff0055;
+  --term-prompt-host: #00f0ff;
+  --term-prompt-path: #7928ca;
+  --term-accent: #00f0ff;
+}
+
+/* Matrix Neon Green Theme */
+.theme-matrix {
+  --term-bg: #050b05;
+  --term-surface: rgba(5, 15, 5, 0.9);
+  --term-viewport: #020602;
+  --term-border: #003b00;
+  --term-text: #00ff66;
+  --term-prompt-user: #00ff66;
+  --term-prompt-host: #33ff33;
+  --term-prompt-path: #009933;
+  --term-accent: #00ff66;
+}
+
+/* Nord Polar Night Theme */
+.theme-nord {
+  --term-bg: #2e3440;
+  --term-surface: rgba(46, 52, 64, 0.9);
+  --term-viewport: #242933;
+  --term-border: #4c566a;
+  --term-text: #eceff4;
+  --term-prompt-user: #a3be8c;
+  --term-prompt-host: #88c0d0;
+  --term-prompt-path: #ebcb8b;
+  --term-accent: #81a1c1;
+}
+
+/* Classic RHEL Dark Theme */
+.theme-rhel {
+  --term-bg: #0c0c0c;
+  --term-surface: rgba(15, 23, 42, 0.9);
+  --term-viewport: #000000;
+  --term-border: #1e293b;
+  --term-text: #f8fafc;
+  --term-prompt-user: #10b981;
+  --term-prompt-host: #3b82f6;
+  --term-prompt-path: #f59e0b;
+  --term-accent: #e11d48;
+}
+
+/* Terminal Cursor animation */
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background-color: var(--term-accent, #10b981);
+  vertical-align: middle;
+  animation: blink-cursor 1s infinite;
+}
+
+/* Inline Ghost Suggestion Text */
+.terminal-suggestion {
+  color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  font-family: inherit;
+}
+
