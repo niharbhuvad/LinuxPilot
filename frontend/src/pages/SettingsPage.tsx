@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { chatApi } from '../services/api'
+import { chatApi, apiKeysApi } from '../services/api'
 import {
   Sliders, Bot, Shield, Bell, Terminal as TerminalIcon,
   Palette, Save, RotateCcw, Check, Info, Sparkles, Lock,
@@ -142,10 +142,43 @@ export default function SettingsPage() {
     }
   }
 
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3000)
+  const handleSave = async () => {
+    try {
+      // Save normal UI settings locally
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+
+      // Save the active provider's API key in the backend database
+      const apiKey =
+        settings.aiProvider === 'gemini'
+          ? settings.geminiApiKey
+          : settings.aiProvider === 'groq'
+            ? settings.groqApiKey
+            : settings.aiProvider === 'openai'
+              ? settings.openaiApiKey
+              : ''
+
+      // Only send a key when one is actually configured
+      if (
+        apiKey &&
+        !apiKey.startsWith('your_') &&
+        apiKey.trim().length > 0
+      ) {
+        await apiKeysApi.save({
+          provider: settings.aiProvider,
+          api_key: apiKey.trim(),
+        })
+      }
+
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 3000)
+    } catch (err: any) {
+      console.error('Failed to save API key:', err)
+
+      alert(
+        err.response?.data?.detail ||
+        'Failed to save API key to the database'
+      )
+    }
   }
 
   const handleReset = () => {
@@ -222,8 +255,8 @@ export default function SettingsPage() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-3 text-xs font-medium border-b-2 transition-colors ${isActive
-                  ? 'border-terminal-blue text-terminal-blue bg-terminal-blue/5'
-                  : 'border-transparent text-terminal-muted hover:text-terminal-text hover:border-terminal-border'
+                ? 'border-terminal-blue text-terminal-blue bg-terminal-blue/5'
+                : 'border-transparent text-terminal-muted hover:text-terminal-text hover:border-terminal-border'
                 }`}
             >
               <Icon className="w-4 h-4" />
@@ -454,10 +487,10 @@ export default function SettingsPage() {
               {/* Diagnostic Result Card */}
               {aiTestResult && (
                 <div className={`p-4 rounded-xl border font-mono text-xs space-y-3 transition-all ${aiTestResult.status === 'ok'
-                    ? 'bg-terminal-green/5 border-terminal-green/30 text-terminal-text'
-                    : aiTestResult.status === 'fallback'
-                      ? 'bg-terminal-amber/5 border-terminal-amber/30 text-terminal-text'
-                      : 'bg-terminal-red/5 border-terminal-red/30 text-terminal-text'
+                  ? 'bg-terminal-green/5 border-terminal-green/30 text-terminal-text'
+                  : aiTestResult.status === 'fallback'
+                    ? 'bg-terminal-amber/5 border-terminal-amber/30 text-terminal-text'
+                    : 'bg-terminal-red/5 border-terminal-red/30 text-terminal-text'
                   }`}>
                   {/* Top Header Row */}
                   <div className="flex items-center justify-between pb-2 border-b border-terminal-border/50">

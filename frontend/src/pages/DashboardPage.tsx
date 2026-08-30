@@ -1,5 +1,5 @@
 // LinuxAI — Dashboard Page
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { systemApi, servicesApi, alertsApi } from '../services/api'
 import MetricCard from '../components/MetricCard'
 import HealthScoreRing from '../components/HealthScore'
@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [alerts, setAlerts] = useState<AlertOut[]>([])
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+  const isFetchingRef = useRef<boolean>(false)
 
   // Maintenance Preview Modal State
   const [maintenanceModal, setMaintenanceModal] = useState<{
@@ -38,6 +39,9 @@ export default function DashboardPage() {
   } | null>(null)
 
   const fetchAll = async () => {
+    if (isFetchingRef.current) return
+    isFetchingRef.current = true
+
     try {
       const [sysRes, healthRes, failedRes, alertsRes] = await Promise.allSettled([
         systemApi.overview(),
@@ -51,12 +55,13 @@ export default function DashboardPage() {
       if (alertsRes.status === 'fulfilled') setAlerts(alertsRes.value.data || [])
       setLastUpdated(new Date())
     } finally {
+      isFetchingRef.current = false
       setLoading(false)
     }
   }
 
-  useEffect(() => { fetchAll() }, [])
   useEffect(() => {
+    fetchAll()
     const interval = setInterval(fetchAll, 30000)
     return () => clearInterval(interval)
   }, [])

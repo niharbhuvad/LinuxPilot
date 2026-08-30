@@ -161,6 +161,7 @@ export default function SSHConnectionCard() {
         message: `Connected to RHEL Lab (${host})! Saved to connection profiles list. LinuxAI commands will now execute remotely over SSH.`,
       })
       loadInitial()
+      window.dispatchEvent(new Event('ssh-config-updated'))
     } catch (err: any) {
       setTestResult({
         success: false,
@@ -187,6 +188,7 @@ export default function SSHConnectionCard() {
         message: `Activated profile "${profile.name}" (${profile.host})! LinuxAI is now connected live over SSH.`,
       })
       loadInitial()
+      window.dispatchEvent(new Event('ssh-config-updated'))
       if (viewingProfile?.id === profile.id) {
         setViewingProfile(null)
       }

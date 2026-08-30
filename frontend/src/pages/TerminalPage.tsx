@@ -441,6 +441,10 @@ export default function TerminalPage() {
   const wsRef = useRef<WebSocket | null>(null)
   const outputBufferRef = useRef<string[]>([])
 
+  const isFetchingTelemetryRef = useRef<boolean>(false)
+  const sshInfoRef = useRef(sshInfo)
+  useEffect(() => { sshInfoRef.current = sshInfo }, [sshInfo])
+
   // Load Host Info & Telemetry
   useEffect(() => {
     sshApi
@@ -458,6 +462,9 @@ export default function TerminalPage() {
       .catch(() => {})
 
     const fetchTelemetry = () => {
+      if (isFetchingTelemetryRef.current) return
+      isFetchingTelemetryRef.current = true
+
       systemApi
         .overview()
         .then((res) => {
@@ -473,17 +480,20 @@ export default function TerminalPage() {
               cpu: cpuVal,
               ram: ramVal,
               disk: diskVal,
-              ip: res.data.network?.ip || sshInfo.host || '192.168.232.129',
+              ip: res.data.network?.ip || sshInfoRef.current.host || '192.168.232.129',
             })
           }
         })
         .catch(() => {})
+        .finally(() => {
+          isFetchingTelemetryRef.current = false
+        })
     }
 
     fetchTelemetry()
     const interval = setInterval(fetchTelemetry, 6000)
     return () => clearInterval(interval)
-  }, [sshInfo.host])
+  }, [])
 
   // Initialize and Bind xterm.js to Persistent PTY WebSocket
   useEffect(() => {

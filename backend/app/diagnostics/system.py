@@ -11,6 +11,8 @@ import asyncio
 from datetime import datetime, timezone
 
 import psutil
+from app.config import get_settings
+from app.diagnostics.cache import diag_cache
 
 from app.executor.runner import runner
 from app.schemas import SystemInfo, CPUMetric, MemoryMetric, DiskMetric
@@ -31,7 +33,12 @@ def _is_ssh_active() -> bool:
 
 
 async def get_system_info() -> dict:
-    """Return comprehensive system information from remote target or local."""
+    """Return comprehensive system information from remote target or local with scoped single-flight caching."""
+    return await diag_cache.get_or_fetch("system_info", _fetch_system_info)
+
+
+async def _fetch_system_info() -> dict:
+    """Raw fetch for system information."""
     cpu = await get_cpu_usage()
     mem = await get_memory_usage()
     disks = await get_disk_usage()
@@ -100,7 +107,12 @@ async def get_system_info() -> dict:
 
 
 async def get_cpu_usage() -> dict:
-    """Get CPU usage from remote target (via /proc/stat + nproc) or local psutil."""
+    """Get CPU usage from remote target (via /proc/stat + nproc) or local psutil with scoped caching."""
+    return await diag_cache.get_or_fetch("cpu", _fetch_cpu_usage)
+
+
+async def _fetch_cpu_usage() -> dict:
+    """Raw fetch for CPU metrics."""
     if _is_ssh_active():
         # Use top -bn1 for accurate CPU snapshot from remote
         top_res = await runner.run(["top", "-bn1", "-w", "512"], approved=True, timeout=8)
@@ -204,7 +216,12 @@ def _parse_size_bytes(s: str) -> int:
 
 
 async def get_memory_usage() -> dict:
-    """Get memory info from remote target (via free -b or /proc/meminfo) or local psutil."""
+    """Get memory info from remote target (via free -b or /proc/meminfo) or local psutil with scoped caching."""
+    return await diag_cache.get_or_fetch("memory", _fetch_memory_usage)
+
+
+async def _fetch_memory_usage() -> dict:
+    """Raw fetch for memory metrics."""
     if _is_ssh_active():
         free_res = await runner.run(["free", "-b"], approved=True)
         total = used = available = 0
@@ -271,7 +288,12 @@ async def get_memory_usage() -> dict:
 
 
 async def get_disk_usage() -> list[dict]:
-    """Get disk usage from remote target (via df) or local psutil."""
+    """Get disk usage from remote target (via df) or local psutil with scoped caching."""
+    return await diag_cache.get_or_fetch("disk", _fetch_disk_usage)
+
+
+async def _fetch_disk_usage() -> list[dict]:
+    """Raw fetch for disk metrics."""
     if _is_ssh_active():
         df_res = await runner.run(["df", "-B1", "--output=source,fstype,size,used,avail,pcent,target"], approved=True)
         disks = []
@@ -350,7 +372,12 @@ async def get_disk_usage() -> list[dict]:
 
 
 async def get_load_average() -> list[float]:
-    """Get system load averages from remote target or local."""
+    """Get system load averages from remote target or local with scoped caching."""
+    return await diag_cache.get_or_fetch("load", _fetch_load_average)
+
+
+async def _fetch_load_average() -> list[float]:
+    """Raw fetch for load averages."""
     if _is_ssh_active():
         loadavg_res = await runner.run(["cat", "/proc/loadavg"], approved=True)
         if loadavg_res.succeeded:

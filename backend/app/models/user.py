@@ -14,7 +14,7 @@ from app.database.session import Base
 
 if TYPE_CHECKING:
     from app.models.conversation import Conversation
-
+    from app.models.api_key import UserAPIKey
 
 
 def utcnow():
@@ -35,6 +35,11 @@ class User(Base):
 
     sessions: Mapped[list["UserSession"]] = relationship("UserSession", back_populates="user", cascade="all, delete-orphan")
     conversations: Mapped[list["Conversation"]] = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
+    api_keys: Mapped[list["UserAPIKey"]] = relationship(
+    "UserAPIKey",
+    back_populates="user",
+    cascade="all, delete-orphan",
+)
 
 
 class UserSession(Base):

@@ -74,6 +74,18 @@ export const chatApi = {
     api.get('/api/chat/status'),
 }
 
+// ── User API Keys ─────────────────────────────────────────────────────────
+export const apiKeysApi = {
+  list: () => api.get('/api/keys'),
+
+  save: (data: {
+    provider: string
+    api_key: string
+  }) => api.post('/api/keys', data),
+
+  delete: (provider: string) =>
+    api.delete(`/api/keys/${encodeURIComponent(provider)}`),
+}
 
 // ── Services ─────────────────────────────────────────────────────────────────
 export const servicesApi = {

@@ -55,8 +55,13 @@ export default function Sidebar() {
 
   useEffect(() => {
     checkSshStatus()
-    const interval = setInterval(checkSshStatus, 5000)
-    return () => clearInterval(interval)
+    const handleRefresh = () => checkSshStatus()
+    window.addEventListener('ssh-config-updated', handleRefresh)
+    window.addEventListener('focus', handleRefresh)
+    return () => {
+      window.removeEventListener('ssh-config-updated', handleRefresh)
+      window.removeEventListener('focus', handleRefresh)
+    }
   }, [])
 
   const handleLogout = () => {

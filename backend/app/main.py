@@ -66,6 +66,7 @@ def create_app() -> FastAPI:
     from app.api.alerts import router as alerts_router
     from app.api.auth import router as auth_router
     from app.api.ssh import router as ssh_router
+    from app.api.api_keys import router as api_keys_router
     from app.api.files import router as files_router
     from app.api.users import router as users_router
     from app.api.packages import router as packages_router
@@ -77,6 +78,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router,     prefix="/api/auth",      tags=["Auth"])
     app.include_router(terminal_ws_router, prefix="/api/terminal", tags=["Terminal PTY"])
     app.include_router(ssh_router,      prefix="/api/ssh",       tags=["SSH"])
+    app.include_router(api_keys_router, prefix="/api/keys", tags=["API Keys"])
     app.include_router(files_router,    prefix="/api/files",     tags=["Files"])
     app.include_router(users_router,    prefix="/api/users",     tags=["Users"])
     app.include_router(packages_router, prefix="/api/packages",  tags=["Packages"])

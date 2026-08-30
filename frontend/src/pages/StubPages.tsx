@@ -1,6 +1,6 @@
 // LinuxAI — Stub pages for Monitor, Users, Packages, Settings
 import { systemApi } from '../services/api'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import MetricCard from '../components/MetricCard'
 import { Cpu, MemoryStick, Activity } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
@@ -8,15 +8,25 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 // Monitor Page
 export function MonitorPage() {
   const [history, setHistory] = useState<any[]>([])
+  const isFetchingRef = useRef<boolean>(false)
 
   useEffect(() => {
     const tick = async () => {
-      const [cpu, mem] = await Promise.all([systemApi.cpu(), systemApi.memory()])
-      setHistory(prev => [...prev.slice(-30), {
-        time: new Date().toLocaleTimeString(),
-        cpu: cpu.data.percent,
-        mem: mem.data.percent,
-      }])
+      if (isFetchingRef.current) return
+      isFetchingRef.current = true
+
+      try {
+        const [cpu, mem] = await Promise.all([systemApi.cpu(), systemApi.memory()])
+        setHistory(prev => [...prev.slice(-30), {
+          time: new Date().toLocaleTimeString(),
+          cpu: cpu.data.percent,
+          mem: mem.data.percent,
+        }])
+      } catch {
+        // Silently catch errors if backend is reloading
+      } finally {
+        isFetchingRef.current = false
+      }
     }
     tick()
     const t = setInterval(tick, 5000)

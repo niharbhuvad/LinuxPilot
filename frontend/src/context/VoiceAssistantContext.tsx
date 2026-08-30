@@ -383,11 +383,18 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     return () => clearTimeout(timer)
   }, [voiceSettings.autoGreet, voiceSettings.enabled, speakText])
 
+  const isPollingHealthRef = useRef<boolean>(false)
+  const speakTextRef = useRef(speakText)
+  useEffect(() => { speakTextRef.current = speakText }, [speakText])
+
   // ── System health polling with voice notifications ──
   useEffect(() => {
-    if (!voiceSettings.healthAlerts) return
+    if (!voiceSettings.healthAlerts || !voiceSettings.enabled) return
 
     const pollHealth = async () => {
+      if (isPollingHealthRef.current) return
+      isPollingHealthRef.current = true
+
       try {
         const res = await systemApi.overview()
         const data = res.data
@@ -440,18 +447,20 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
           setMessages(prev => [...prev, alertMsg])
 
           if (!isMuted) {
-            speakText(alertText, 'alert')
+            speakTextRef.current(alertText, 'alert')
           }
         }
       } catch {
         // Silently handle — system API might not be connected
+      } finally {
+        isPollingHealthRef.current = false
       }
     }
 
     pollHealth()
     const interval = setInterval(pollHealth, 15000)
     return () => clearInterval(interval)
-  }, [voiceSettings.healthAlerts, voiceSettings.voiceNotifications, isMuted, speakText])
+  }, [voiceSettings.healthAlerts, voiceSettings.enabled, voiceSettings.voiceNotifications, isMuted])
 
   // ── Execute a command ──
   const executeCommand = async (reqText: string, cmdToRun: string, riskTier: 'SAFE' | 'WARNING' | 'DANGEROUS') => {
