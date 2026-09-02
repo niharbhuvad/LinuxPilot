@@ -344,11 +344,52 @@ class LinuxAIAgent:
         error_reason: str,
     ) -> AgentResponse:
         """
-        Rule-based diagnostic fallback when LLM API is unavailable/unauthenticated.
-        Executes standard diagnostic tools directly and generates a comprehensive Markdown report.
+        Rule-based smart fallback engine when LLM API is unavailable or unauthenticated.
+        Provides conversational responses for chat/greetings and diagnostic reports for system queries.
         """
         tool_steps: list[AgentToolStep] = []
+        msg_lower = user_message.lower().strip()
 
+        # Sanitize error reason to prevent raw API JSON dump
+        clean_error = "API Key configuration required"
+        if "429" in error_reason or "rate" in error_reason.lower() or "quota" in error_reason.lower():
+            clean_error = "API Rate Limit / Quota Exceeded"
+        elif "key" in error_reason.lower() or "invalid" in error_reason.lower() or "400" in error_reason:
+            clean_error = "API Key not configured or invalid"
+
+        # Check if the query is asking about system performance, metrics, cpu, memory, disk, services, health
+        is_diagnostic_query = any(k in msg_lower for k in [
+            "status", "health", "system", "report", "cpu", "ram", "memory", "disk", "storage",
+            "service", "services", "failed", "diagnostic", "diagnostics", "check", "top", "free", "usage"
+        ])
+
+        if not is_diagnostic_query:
+            # Smart Conversational Reply for General Chat / Greetings
+            if any(k in msg_lower for k in ["hi", "hello", "hey", "listen", "greetings", "namaste"]):
+                content = (
+                    "Hello! I am **LinuxPilot AI Assistant**. 🤖\n\n"
+                    "I am ready to monitor your system, execute Linux/Windows terminal commands, analyze system performance, and assist with kernel operations.\n\n"
+                    "Try asking me:\n"
+                    "- 📊 *\"Check system health and CPU/RAM usage\"*\n"
+                    "- 💾 *\"Show disk usage summary\"*\n"
+                    "- ⚠️ *\"List any failed system services\"*\n\n"
+                    f"> 💡 *Operating in Smart Assistant Mode. (To enable full generative LLM reasoning, configure your Gemini, OpenAI, or Groq API Key in Settings.)*"
+                )
+            else:
+                content = (
+                    f"I received your message: **\"{user_message}\"**. 🚀\n\n"
+                    "I am ready to assist with Linux system administration, diagnostics, command execution, and performance monitoring.\n\n"
+                    f"> 💡 *Operating in Smart Assistant Mode. (To enable full generative LLM reasoning, configure your Gemini, OpenAI, or Groq API Key in Settings.)*"
+                )
+
+            return AgentResponse(
+                conversation_id=conversation_id,
+                message_id=message_id,
+                content=content,
+                tool_steps=[],
+            )
+
+        # ── Otherwise: Run Live System Diagnostics ───────────────────────
         # 1. System Overview
         step1 = AgentToolStep(tool_name="get_system_info", args={}, status="running")
         tool_steps.append(step1)
@@ -385,7 +426,7 @@ class LinuxAIAgent:
             step3.error = str(e)
             disk_info = []
 
-        # Build comprehensive summary text
+        # Build clean summary text
         hostname = sys_info.get("hostname", "local-system") if isinstance(sys_info, dict) else "local-system"
         os_name = sys_info.get("os_name", "Linux") if isinstance(sys_info, dict) else "Linux"
         cpu_pct = sys_info.get("cpu", {}).get("percent", "N/A") if isinstance(sys_info, dict) else "N/A"
@@ -414,12 +455,8 @@ class LinuxAIAgent:
                     report_lines.append(f"- Mount `{d.get('mountpoint')}`: `{d.get('percent')}%` used ({d.get('used_gb')}GB / {d.get('size_gb')}GB)")
             report_lines.append("")
 
-        clean_error = error_reason
-        if "RESOURCE_EXHAUSTED" in clean_error or "429" in clean_error:
-            clean_error = "API Quota Exceeded (429 Rate Limit)"
-
         report_lines.append(
-            "> ℹ️ *Note: Executed via LinuxAI Fallback Diagnostic Engine because cloud/local LLM provider API was unavailable (" + clean_error + "). To enable interactive AI conversational mode, configure a valid OPENAI_API_KEY, GEMINI_API_KEY, GROQ_API_KEY, or run a local Ollama instance in Settings.*"
+            f"> 💡 *Note: Executed via LinuxAI Diagnostic Engine ({clean_error}). Configure a valid Gemini or OpenAI API Key in Settings to enable generative conversational mode.*"
         )
 
         return AgentResponse(
