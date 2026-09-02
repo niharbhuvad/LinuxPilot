@@ -176,7 +176,7 @@ export const FloatingVoiceButton: React.FC = () => {
               </div>
             </div>
 
-            {/* Title + Slider */}
+            {/* Title + Clean Subtitle */}
             <div className="relative z-10 mt-2 flex flex-col items-center">
               <h2 className={clsx(
                 'text-2xl font-semibold tracking-tight transition-colors',
@@ -184,15 +184,7 @@ export const FloatingVoiceButton: React.FC = () => {
               )}>
                 {statusTitle}
               </h2>
-              <div className="mt-2.5 w-48 h-[4px] bg-slate-900 rounded-full relative overflow-visible border border-slate-800/60">
-                <div className={clsx('absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full transition-all duration-[60ms]',
-                  isListening ? 'bg-cyan-400 shadow-[0_0_10px_#00f0ff]' : 'bg-slate-500'
-                )} style={{ left: `calc(${sliderPos}% - 5px)` }} />
-                <div className={clsx('h-full rounded-full transition-all duration-[60ms]',
-                  isListening ? 'bg-gradient-to-r from-cyan-500/60 to-cyan-400' : 'bg-slate-700/40'
-                )} style={{ width: `${sliderPos}%` }} />
-              </div>
-              <p className="mt-2 text-[11px] text-slate-400">
+              <p className="mt-1.5 text-[11px] font-mono text-slate-400">
                 {transcript && isListening ? `"${transcript}"` : 'Speak now or type a command'}
               </p>
             </div>

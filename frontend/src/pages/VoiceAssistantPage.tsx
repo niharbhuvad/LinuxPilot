@@ -509,7 +509,7 @@ export default function VoiceAssistantPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-cyan-600/[0.06] blur-[140px] pointer-events-none" />
           <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-pink-600/[0.05] blur-[120px] pointer-events-none" />
 
-          {/* 1. Branded Header: Dynamic Title + Cyber HUD Slider + Telemetry Status Pill */}
+          {/* 1. Branded Header: Dynamic Title + Clean Subtitle Ticker */}
           <div className="relative z-10 flex flex-col items-center text-center shrink-0 w-full max-w-md">
 
             {/* Main Dynamic Status Title */}
@@ -525,55 +525,20 @@ export default function VoiceAssistantPage() {
               <span>{currentStatus.title}</span>
             </h1>
 
-            {/* Futuristic Sci-Fi Audio Slider / Scanning Progress Track */}
-            <div className="mt-2.5 w-60 sm:w-72 flex items-center gap-2">
-              <span className="text-[9px] font-mono text-cyan-500/80 font-bold shrink-0">[ HUD ]</span>
-              <div className="flex-1 h-[6px] bg-slate-950/90 rounded-full relative overflow-visible border border-cyan-500/40 shadow-[0_0_12px_rgba(0,240,255,0.25)]">
-                {/* Glowing Laser Scan Node */}
-                <div
-                  className={clsx(
-                    'absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-all duration-[60ms] z-10 flex items-center justify-center',
-                    isListening ? 'bg-cyan-400 shadow-[0_0_18px_#00f0ff]' :
-                    isThinking ? 'bg-purple-400 shadow-[0_0_18px_#a855f7]' :
-                    isSpeaking ? 'bg-pink-400 shadow-[0_0_18px_#ec4899]' :
-                    'bg-cyan-400 shadow-[0_0_10px_#00f0ff]'
-                  )}
-                  style={{ left: `calc(${sliderPosition}% - 7px)` }}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                </div>
-
-                {/* Progress bar line */}
-                <div
-                  className={clsx(
-                    'h-full rounded-full transition-all duration-[60ms]',
-                    isListening ? 'bg-gradient-to-r from-cyan-600 via-cyan-400 to-teal-300 shadow-[0_0_10px_#00f0ff]' :
-                    isThinking ? 'bg-gradient-to-r from-purple-600 via-purple-400 to-pink-400 shadow-[0_0_10px_#a855f7]' :
-                    isSpeaking ? 'bg-gradient-to-r from-pink-600 via-rose-400 to-amber-300 shadow-[0_0_10px_#ec4899]' :
-                    'bg-gradient-to-r from-cyan-600/50 to-cyan-400/80'
-                  )}
-                  style={{ width: `${sliderPosition}%` }}
-                />
-              </div>
-              <span className="text-[9px] font-mono text-cyan-500/80 font-bold shrink-0">[ {Math.round(sliderPosition)}% ]</span>
-            </div>
-
-            {/* Subtitle / Dynamic Telemetry Status Ticker Pill */}
-            <div className="mt-2.5 px-4 py-1.5 rounded-full bg-[#080e1e]/90 border border-cyan-500/30 backdrop-blur-md shadow-lg flex items-center justify-center">
-              <p className={clsx(
-                'text-[11px] font-mono max-w-[340px] leading-relaxed transition-all tracking-wide',
-                currentThoughtStep ? 'text-purple-300 font-bold animate-pulse' :
-                isListening && transcript ? 'text-cyan-200 font-semibold' : 'text-slate-300'
-              )}>
-                {currentThoughtStep ? (
-                  <span>{currentThoughtStep} <span className="animate-ping">_</span></span>
-                ) : transcript && isListening ? (
-                  <span>"{transcript}" <span className="animate-pulse">|</span></span>
-                ) : (
-                  <span>{currentStatus.subtitle}</span>
-                )}
-              </p>
-            </div>
+            {/* Clean Subtitle / Dynamic Thought Ticker */}
+            <p className={clsx(
+              'mt-2 text-xs font-mono max-w-[360px] leading-relaxed transition-all tracking-wide text-center',
+              currentThoughtStep ? 'text-purple-300 font-bold animate-pulse' :
+              isListening && transcript ? 'text-cyan-200 font-semibold' : 'text-slate-400'
+            )}>
+              {currentThoughtStep ? (
+                <span>{currentThoughtStep} <span className="animate-ping">_</span></span>
+              ) : transcript && isListening ? (
+                <span>"{transcript}" <span className="animate-pulse">|</span></span>
+              ) : (
+                <span>{currentStatus.subtitle}</span>
+              )}
+            </p>
 
           </div>
 
