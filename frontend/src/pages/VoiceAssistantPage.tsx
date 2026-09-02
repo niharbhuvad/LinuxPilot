@@ -509,21 +509,10 @@ export default function VoiceAssistantPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-cyan-600/[0.06] blur-[140px] pointer-events-none" />
           <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-pink-600/[0.05] blur-[120px] pointer-events-none" />
 
-          {/* 1. Futuristic Robot AI Companion Header (At the exact requested header location) */}
-          <div className="relative z-10 flex flex-col items-center text-center shrink-0 w-full max-w-md my-1">
+          {/* 1. Branded Header: Dynamic Title + Cyber HUD Slider + Telemetry Status Pill */}
+          <div className="relative z-10 flex flex-col items-center text-center shrink-0 w-full max-w-md">
 
-            {/* Expressive Robot Avatar Visualizer at Top Location */}
-            <div className="relative mb-1">
-              <RobotAvatar
-                status={voiceStatus}
-                emotionState={emotionState}
-                size={160}
-                audioLevel={audioLevel}
-                className="transition-all duration-300"
-              />
-            </div>
-
-            {/* Dynamic Status Title */}
+            {/* Main Dynamic Status Title */}
             <h1 className={clsx(
               'text-2xl sm:text-3xl font-black font-mono tracking-tight transition-all duration-500 flex items-center justify-center gap-2',
               isListening ? 'text-cyan-300 drop-shadow-[0_0_25px_rgba(0,240,255,0.6)]' :
@@ -532,7 +521,8 @@ export default function VoiceAssistantPage() {
               isExecuting ? 'text-amber-300 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)]' :
               'text-cyan-200 drop-shadow-[0_0_18px_rgba(0,240,255,0.4)]'
             )}>
-              {currentStatus.title}
+              <Terminal className="w-5 h-5 text-cyan-400 animate-pulse" />
+              <span>{currentStatus.title}</span>
             </h1>
 
             {/* Futuristic Sci-Fi Audio Slider / Scanning Progress Track */}
@@ -542,13 +532,13 @@ export default function VoiceAssistantPage() {
                 {/* Glowing Laser Scan Node */}
                 <div
                   className={clsx(
-                    'absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-[60ms] z-10 flex items-center justify-center',
+                    'absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-all duration-[60ms] z-10 flex items-center justify-center',
                     isListening ? 'bg-cyan-400 shadow-[0_0_18px_#00f0ff]' :
                     isThinking ? 'bg-purple-400 shadow-[0_0_18px_#a855f7]' :
                     isSpeaking ? 'bg-pink-400 shadow-[0_0_18px_#ec4899]' :
                     'bg-cyan-400 shadow-[0_0_10px_#00f0ff]'
                   )}
-                  style={{ left: `calc(${sliderPosition}% - 8px)` }}
+                  style={{ left: `calc(${sliderPosition}% - 7px)` }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                 </div>
@@ -568,8 +558,8 @@ export default function VoiceAssistantPage() {
               <span className="text-[9px] font-mono text-cyan-500/80 font-bold shrink-0">[ {Math.round(sliderPosition)}% ]</span>
             </div>
 
-            {/* Subtitle / Dynamic Machine Telemetry Status Ticker */}
-            <div className="mt-2.5 px-3.5 py-1.5 rounded-xl bg-[#080e1e]/90 border border-cyan-500/30 backdrop-blur-md shadow-lg flex items-center justify-center">
+            {/* Subtitle / Dynamic Telemetry Status Ticker Pill */}
+            <div className="mt-2.5 px-4 py-1.5 rounded-full bg-[#080e1e]/90 border border-cyan-500/30 backdrop-blur-md shadow-lg flex items-center justify-center">
               <p className={clsx(
                 'text-[11px] font-mono max-w-[340px] leading-relaxed transition-all tracking-wide',
                 currentThoughtStep ? 'text-purple-300 font-bold animate-pulse' :
@@ -587,13 +577,26 @@ export default function VoiceAssistantPage() {
 
           </div>
 
-          {/* 2. Neural Ambient Particle Sphere Visualizer Matrix */}
-          <div className="relative z-10 flex-1 flex items-center justify-center w-full min-h-0">
-            <ParticleSphere
+          {/* 2. Hero Visualizer: Epic Robot Companion with Glowing 3D Neural Particle Halo */}
+          <div className="relative z-10 flex-1 flex items-center justify-center w-full min-h-0 my-2">
+            
+            {/* Ambient 3D Particle Halo */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-70 pointer-events-none">
+              <ParticleSphere
+                status={voiceStatus}
+                emotionState={emotionState}
+                size={immersiveMode ? 360 : 300}
+                audioLevel={audioLevel || (isListening ? 0.6 : 0)}
+              />
+            </div>
+
+            {/* Prominent Hero Robot AI Avatar Companion */}
+            <RobotAvatar
               status={voiceStatus}
               emotionState={emotionState}
               size={immersiveMode ? 320 : 250}
-              audioLevel={audioLevel || (isListening ? 0.6 : 0)}
+              audioLevel={audioLevel}
+              className="z-20 transition-all duration-500"
             />
           </div>
 
