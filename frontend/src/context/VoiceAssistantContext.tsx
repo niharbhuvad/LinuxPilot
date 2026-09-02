@@ -688,11 +688,14 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
         }, 1500)
       }
     } catch (err: any) {
-      const detailMsg = err.response?.data?.detail || err.message || String(err)
+      let detailMsg = err.response?.data?.detail || err.message || String(err)
+      if (detailMsg === 'Network Error' || detailMsg.includes('NetworkError') || detailMsg.includes('Failed to fetch')) {
+        detailMsg = 'Server connection temporarily interrupted. Reconnecting to LinuxPilot engine...'
+      }
       setMessages(prev => [...prev, {
         id: `msg-${Date.now()}-err`,
         sender: 'assistant',
-        text: `I apologize, I encountered a difficulty: ${detailMsg}. Please try again, I am here for you. 🙏`,
+        text: `I apologize, ${detailMsg} Please try again, I am here for you. 🙏`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         emotion: 'caring',
       }])
