@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { Mic, MicOff, Volume2, VolumeX, X, ShieldAlert, CheckCircle2, Terminal, Brain, Zap, Sparkles, Activity } from 'lucide-react'
+import { Mic, MicOff, Volume2, VolumeX, X, ShieldAlert, CheckCircle2 } from 'lucide-react'
 import { useVoiceAssistant } from '../context/VoiceAssistantContext'
 import ParticleSphere from './ParticleSphere'
+import RobotAvatar from './RobotAvatar'
 import clsx from 'clsx'
 
 // ── Compact Dual-Tone Waveform for the modal overlay ──
@@ -126,9 +127,9 @@ export const FloatingVoiceButton: React.FC = () => {
 
   const statusTitle =
     voiceStatus === 'listening' ? 'Listening...' :
-    voiceStatus === 'thinking' ? 'Analyzing...' :
-    voiceStatus === 'executing' ? 'Executing...' :
-    voiceStatus === 'speaking' ? 'Speaking...' : 'LinuxAI Voice'
+      voiceStatus === 'thinking' ? 'Analyzing...' :
+        voiceStatus === 'executing' ? 'Executing...' :
+          voiceStatus === 'speaking' ? 'Speaking...' : 'LinuxAI Voice'
 
   return (
     <>
@@ -146,7 +147,7 @@ export const FloatingVoiceButton: React.FC = () => {
           <span className={clsx(
             'w-2.5 h-2.5 rounded-full shrink-0',
             isListening ? 'bg-cyan-400 animate-ping shadow-[0_0_8px_#00f0ff]' :
-            isBusy ? 'bg-purple-400 animate-pulse' : 'bg-emerald-400'
+              isBusy ? 'bg-purple-400 animate-pulse' : 'bg-emerald-400'
           )} />
           <Mic className={clsx('w-4 h-4', isListening && 'animate-bounce text-cyan-300')} />
           <span>{isListening ? 'Listening...' : isBusy ? 'AI Working...' : '● AI Voice'}</span>
@@ -157,7 +158,7 @@ export const FloatingVoiceButton: React.FC = () => {
       {isOverlayOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn select-none">
           <div className="relative w-full max-w-md bg-[#070b16] border border-cyan-950/50 rounded-3xl p-5 shadow-2xl shadow-cyan-950/50 flex flex-col items-center text-center overflow-hidden">
-            
+
             {/* Ambient glows */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-full bg-cyan-500/8 blur-[90px] pointer-events-none" />
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] rounded-full bg-pink-500/6 blur-[80px] pointer-events-none" />
@@ -175,60 +176,33 @@ export const FloatingVoiceButton: React.FC = () => {
               </div>
             </div>
 
-            {/* Title + Futuristic HUD Slider Track */}
-            <div className="relative z-10 mt-1 flex flex-col items-center w-full">
+            {/* Title + Slider */}
+            <div className="relative z-10 mt-2 flex flex-col items-center">
               <h2 className={clsx(
-                'text-xl font-mono font-bold tracking-tight transition-all flex items-center gap-2',
-                isListening ? 'text-cyan-300 drop-shadow-[0_0_20px_rgba(0,240,255,0.5)]' :
-                isBusy ? 'text-purple-300 drop-shadow-[0_0_20px_rgba(168,85,247,0.5)]' :
-                'text-cyan-200'
+                'text-2xl font-semibold tracking-tight transition-colors',
+                isListening ? 'text-cyan-300 drop-shadow-[0_0_15px_rgba(0,240,255,0.4)]' : 'text-cyan-200'
               )}>
-                <Terminal className="w-5 h-5 text-cyan-400 animate-pulse" />
-                <span>{statusTitle}</span>
+                {statusTitle}
               </h2>
-
-              {/* Sci-Fi HUD Progress Track */}
-              <div className="mt-2 w-52 flex items-center gap-1.5">
-                <span className="text-[8px] font-mono text-cyan-500/70 font-bold">[ HUD ]</span>
-                <div className="flex-1 h-[5px] bg-slate-950 rounded-full relative overflow-visible border border-cyan-500/40">
-                  <div className={clsx('absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full transition-all duration-[60ms] z-10 flex items-center justify-center',
-                    isListening ? 'bg-cyan-400 shadow-[0_0_12px_#00f0ff]' : 'bg-slate-500'
-                  )} style={{ left: `calc(${sliderPos}% - 7px)` }}>
-                    <span className="w-1 h-1 rounded-full bg-white animate-ping" />
-                  </div>
-                  <div className={clsx('h-full rounded-full transition-all duration-[60ms]',
-                    isListening ? 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-teal-300' : 'bg-slate-700/40'
-                  )} style={{ width: `${sliderPos}%` }} />
-                </div>
-                <span className="text-[8px] font-mono text-cyan-500/70 font-bold">[ {Math.round(sliderPos)}% ]</span>
+              <div className="mt-2.5 w-48 h-[4px] bg-slate-900 rounded-full relative overflow-visible border border-slate-800/60">
+                <div className={clsx('absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full transition-all duration-[60ms]',
+                  isListening ? 'bg-cyan-400 shadow-[0_0_10px_#00f0ff]' : 'bg-slate-500'
+                )} style={{ left: `calc(${sliderPos}% - 5px)` }} />
+                <div className={clsx('h-full rounded-full transition-all duration-[60ms]',
+                  isListening ? 'bg-gradient-to-r from-cyan-500/60 to-cyan-400' : 'bg-slate-700/40'
+                )} style={{ width: `${sliderPos}%` }} />
               </div>
-
-              {/* Dynamic Telemetry Ticker */}
-              <div className="mt-2 px-3 py-1.5 rounded-xl bg-[#090f20]/90 border border-cyan-500/30 text-[10px] font-mono text-cyan-300 font-semibold max-w-[300px] truncate">
-                {isListening ? (
-                  <span className="flex items-center justify-center gap-1.5 text-cyan-300 animate-pulse">
-                    <Mic className="w-3 h-3 text-cyan-400" />
-                    <span>MACHINE IS TRACKING SPEECH...</span>
-                  </span>
-                ) : voiceStatus === 'thinking' ? (
-                  <span className="flex items-center justify-center gap-1.5 text-purple-300 animate-pulse">
-                    <Brain className="w-3 h-3 text-purple-400 animate-spin" />
-                    <span>MACHINE REASONING & ANALYZING...</span>
-                  </span>
-                ) : voiceStatus === 'speaking' ? (
-                  <span className="flex items-center justify-center gap-1.5 text-pink-300 animate-pulse">
-                    <Sparkles className="w-3 h-3 text-pink-400" />
-                    <span>MACHINE IS TALKING & SPEAKING...</span>
-                  </span>
-                ) : (
-                  <span className="text-slate-400">{transcript && isListening ? `"${transcript}"` : 'Speak now or type a command'}</span>
-                )}
-              </div>
+              <p className="mt-2 text-[11px] text-slate-400">
+                {transcript && isListening ? `"${transcript}"` : 'Speak now or type a command'}
+              </p>
             </div>
 
-            {/* Particle Sphere */}
+            {/* Robot Avatar Visualizer */}
             <div className="my-1 relative z-10 flex items-center justify-center">
-              <ParticleSphere status={voiceStatus} size={220} audioLevel={isListening ? 0.6 : 0} />
+              <div className="absolute inset-0 flex items-center justify-center opacity-60 pointer-events-none">
+                <ParticleSphere status={voiceStatus} size={220} audioLevel={isListening ? 0.6 : 0} />
+              </div>
+              <RobotAvatar status={voiceStatus} size={180} />
             </div>
 
             {/* Waveform */}
