@@ -36,25 +36,25 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
   else if (isCompleted) pose = 'success'
   else if (isHappy) pose = 'happy'
 
-  // Determine visor color scheme
+  // Determine visor color scheme & neon glow aura
   let mainGlowColor = '#00f0ff' // Cyan
-  let secondaryGlow = 'rgba(0, 240, 255, 0.4)'
+  let secondaryGlow = 'rgba(0, 240, 255, 0.45)'
 
   if (isThinking) {
     mainGlowColor = '#a855f7' // Purple
-    secondaryGlow = 'rgba(168, 85, 247, 0.4)'
+    secondaryGlow = 'rgba(168, 85, 247, 0.45)'
   } else if (isSpeaking) {
     mainGlowColor = '#ec4899' // Pink
-    secondaryGlow = 'rgba(236, 72, 153, 0.4)'
+    secondaryGlow = 'rgba(236, 72, 153, 0.45)'
   } else if (isAlert) {
     mainGlowColor = '#f59e0b' // Amber/Red
-    secondaryGlow = 'rgba(245, 158, 11, 0.4)'
+    secondaryGlow = 'rgba(245, 158, 11, 0.45)'
   } else if (isHappy || isCompleted) {
     mainGlowColor = '#10b981' // Emerald
-    secondaryGlow = 'rgba(16, 185, 129, 0.4)'
+    secondaryGlow = 'rgba(16, 185, 129, 0.45)'
   } else if (isCaring || isGreeting) {
     mainGlowColor = '#f472b6' // Warm pink
-    secondaryGlow = 'rgba(244, 114, 182, 0.4)'
+    secondaryGlow = 'rgba(244, 114, 182, 0.45)'
   }
 
   const svgScale = size / 280
@@ -66,10 +66,10 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
     >
       {/* ── Ambient Floating Glow Effects ── */}
       <div
-        className="absolute inset-0 rounded-full blur-[60px] pointer-events-none transition-all duration-700"
+        className="absolute inset-0 rounded-full blur-[65px] pointer-events-none transition-all duration-700"
         style={{
           background: `radial-gradient(circle, ${secondaryGlow} 0%, transparent 70%)`,
-          transform: `scale(${1 + audioLevel * 0.25})`,
+          transform: `scale(${1 + audioLevel * 0.3})`,
         }}
       />
 
@@ -110,7 +110,7 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
         xmlns="http://www.w3.org/2000/svg"
         className="relative z-10 transition-transform duration-500"
         style={{
-          transform: `scale(${svgScale}) ${isListening ? 'translateY(-4px)' : isThinking ? 'rotate(-3deg)' : 'translateY(0)'}`,
+          transform: `scale(${svgScale}) ${isListening ? 'translateY(-5px)' : isThinking ? 'rotate(-3deg)' : 'translateY(0)'}`,
         }}
       >
         <defs>
@@ -122,8 +122,8 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
           </linearGradient>
 
           <linearGradient id="helmetRim" x1="70" y1="40" x2="210" y2="160" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#818cf8" stopOpacity="0.1" />
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#818cf8" stopOpacity="0.15" />
           </linearGradient>
 
           <linearGradient id="visorBg" x1="75" y1="75" x2="205" y2="155" gradientUnits="userSpaceOnUse">
@@ -181,95 +181,129 @@ export const RobotAvatar: React.FC<RobotAvatarProps> = ({
           rx="22"
           fill="url(#visorBg)"
           stroke={mainGlowColor}
-          strokeWidth="1.5"
-          strokeOpacity="0.6"
+          strokeWidth="1.8"
+          strokeOpacity="0.75"
           filter="url(#neonGlow)"
         />
 
         {/* Visor Scanline Details */}
-        <line x1="82" y1="76" x2="198" y2="76" stroke="white" strokeOpacity="0.04" strokeWidth="1" />
-        <line x1="82" y1="134" x2="198" y2="134" stroke="white" strokeOpacity="0.04" strokeWidth="1" />
+        <line x1="82" y1="76" x2="198" y2="76" stroke="white" strokeOpacity="0.05" strokeWidth="1" />
+        <line x1="82" y1="134" x2="198" y2="134" stroke="white" strokeOpacity="0.05" strokeWidth="1" />
 
-        {/* ── 5. VISOR EMOTION & EYE ANIMATIONS ── */}
+        {/* ── 5. DEEP EXPRESSIVE VISOR FACIAL ANIMATIONS ── */}
         <g filter="url(#neonGlow)">
-          {/* THINKING: Spinning question mark & upward looking eyes */}
+
+          {/* A. THINKING MODE: Upward curious eyes, thought dots, squiggly mouth */}
           {isThinking && (
             <>
-              {/* Upward Looking Eyes */}
-              <circle cx="112" cy="94" r="7" fill={mainGlowColor} />
-              <circle cx="168" cy="94" r="7" fill={mainGlowColor} />
-              {/* Spinning Question Mark / Loading Ring */}
-              <path
-                d="M 135 110 C 135 102, 145 102, 145 110 C 145 116, 140 118, 140 122"
-                stroke={mainGlowColor}
-                strokeWidth="3"
-                strokeLinecap="round"
-                fill="none"
-                className="animate-pulse"
-              />
-              <circle cx="140" cy="128" r="2" fill={mainGlowColor} />
+              {/* Upward Looking Glossy Eyes */}
+              <g className="animate-pulse">
+                <circle cx="116" cy="92" r="9" fill={mainGlowColor} />
+                <circle cx="114" cy="90" r="3" fill="#ffffff" />
+                <circle cx="172" cy="92" r="9" fill={mainGlowColor} />
+                <circle cx="170" cy="90" r="3" fill="#ffffff" />
+              </g>
+              {/* Squiggly Puzzled Thought Mouth */}
+              <path d="M 128 122 Q 134 118 140 123 T 152 120" stroke={mainGlowColor} strokeWidth="3" strokeLinecap="round" fill="none" />
+              {/* Floating Visor Thought Dots */}
+              <circle cx="180" cy="78" r="2.5" fill={mainGlowColor} className="animate-ping" />
+              <circle cx="186" cy="72" r="3.5" fill={mainGlowColor} className="animate-pulse" />
             </>
           )}
 
-          {/* LISTENING: Wide Focused Round Eyes */}
+          {/* B. LISTENING MODE: Wide Curious Eyes with Audio Reactive Dilating Iris */}
           {isListening && (
             <>
-              <circle cx="110" cy="100" r="11" fill="none" stroke={mainGlowColor} strokeWidth="3" />
-              <circle cx="110" cy="100" r="4" fill={mainGlowColor} />
-              <circle cx="170" cy="100" r="11" fill="none" stroke={mainGlowColor} strokeWidth="3" />
-              <circle cx="170" cy="100" r="4" fill={mainGlowColor} />
+              {/* Left Eye */}
+              <circle cx="110" cy="98" r={10 + audioLevel * 4} fill="none" stroke={mainGlowColor} strokeWidth="2.5" />
+              <circle cx="110" cy="98" r={5 + audioLevel * 3} fill={mainGlowColor} />
+              <circle cx="107" cy="95" r="2.5" fill="#ffffff" />
+              
+              {/* Right Eye */}
+              <circle cx="170" cy="98" r={10 + audioLevel * 4} fill="none" stroke={mainGlowColor} strokeWidth="2.5" />
+              <circle cx="170" cy="98" r={5 + audioLevel * 3} fill={mainGlowColor} />
+              <circle cx="167" cy="95" r="2.5" fill="#ffffff" />
+
+              {/* Curious O-Mouth */}
+              <circle cx="140" cy="122" r={3.5 + audioLevel * 4} fill="none" stroke={mainGlowColor} strokeWidth="2.5" />
             </>
           )}
 
-          {/* TALKING / SPEAKING: Soundwaves & Blinking Eyes */}
+          {/* C. TALKING / SPEAKING MODE: Happy Eyes + Audio Vocal Mouth Equalizer */}
           {isSpeaking && (
             <>
-              {/* Crescent Smiling Eyes */}
-              <path d="M 100 98 Q 112 88 124 98" stroke={mainGlowColor} strokeWidth="3.5" strokeLinecap="round" fill="none" />
-              <path d="M 156 98 Q 168 88 180 98" stroke={mainGlowColor} strokeWidth="3.5" strokeLinecap="round" fill="none" />
-              {/* Animated Visor Sound Equalizer Waves */}
+              {/* Crescent Smiling Eyes ^ ^ */}
+              <path d="M 98 98 Q 112 86 126 98" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" fill="none" />
+              <path d="M 154 98 Q 168 86 182 98" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" fill="none" />
+              
+              {/* Vocal Equalizer Mouth Bars */}
               <g className="animate-pulse">
-                <rect x="120" y="118" width="3" height="12" rx="1.5" fill={mainGlowColor} />
-                <rect x="128" y="112" width="3" height="20" rx="1.5" fill={mainGlowColor} />
-                <rect x="136" y="110" width="3" height="24" rx="1.5" fill={mainGlowColor} />
-                <rect x="144" y="114" width="3" height="18" rx="1.5" fill={mainGlowColor} />
-                <rect x="152" y="118" width="3" height="10" rx="1.5" fill={mainGlowColor} />
+                <rect x="122" y="118" width="3" height={10} rx="1.5" fill={mainGlowColor} />
+                <rect x="129" y="114" width="3" height={16} rx="1.5" fill={mainGlowColor} />
+                <rect x="136" y="110" width="3" height={22} rx="1.5" fill={mainGlowColor} />
+                <rect x="143" y="114" width="3" height={16} rx="1.5" fill={mainGlowColor} />
+                <rect x="150" y="118" width="3" height={10} rx="1.5" fill={mainGlowColor} />
               </g>
             </>
           )}
 
-          {/* HAPPY / DELIGHTED / GREETING: ^ ^ Crescent Eyes */}
+          {/* D. HAPPY / DELIGHTED / GREETING MODE: Anime Joy Eyes + Cheek Blushes */}
           {(isHappy || isGreeting) && !isSpeaking && (
             <>
-              <path d="M 98 102 Q 112 88 126 102" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" fill="none" />
-              <path d="M 154 102 Q 168 88 182 102" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" fill="none" />
-              {/* Cheerful Smile Line */}
-              <path d="M 126 122 Q 140 132 154 122" stroke={mainGlowColor} strokeWidth="3" strokeLinecap="round" fill="none" />
+              {/* Anime Joy Eyes ^ ^ */}
+              <path d="M 96 100 Q 112 84 128 100" stroke={mainGlowColor} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+              <path d="M 152 100 Q 168 84 184 100" stroke={mainGlowColor} strokeWidth="4.5" strokeLinecap="round" fill="none" />
+              
+              {/* Big Joyful Smile */}
+              <path d="M 122 118 Q 140 134 158 118 Z" fill={mainGlowColor} opacity="0.9" />
+
+              {/* Anime Pink Cheek Blushes // // */}
+              <g opacity="0.75">
+                <line x1="88" y1="112" x2="96" y2="106" stroke="#f472b6" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="94" y1="114" x2="102" y2="108" stroke="#f472b6" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="178" y1="106" x2="186" y2="112" stroke="#f472b6" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="184" y1="108" x2="192" y2="114" stroke="#f472b6" strokeWidth="2.5" strokeLinecap="round" />
+              </g>
             </>
           )}
 
-          {/* SUCCESS / COMPLETED: Checkmark ✓ on Visor */}
+          {/* E. SUCCESS / COMPLETED MODE: Star Eyes ★ ★ */}
           {isCompleted && (
             <>
-              <path d="M 105 105 L 125 125 L 175 75" stroke={mainGlowColor} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              {/* Star Eyes */}
+              <path d="M 112 88 L 114 94 L 120 95 L 115 99 L 117 105 L 112 101 L 107 105 L 109 99 L 104 95 L 110 94 Z" fill={mainGlowColor} />
+              <path d="M 168 88 L 170 94 L 176 95 L 171 99 L 173 105 L 168 101 L 163 105 L 165 99 L 160 95 L 166 94 Z" fill={mainGlowColor} />
+              {/* Cheerful Smile */}
+              <path d="M 124 118 Q 140 130 156 118" stroke={mainGlowColor} strokeWidth="3.5" strokeLinecap="round" fill="none" />
             </>
           )}
 
-          {/* ALERT / WARNING: Flashing Hazard Triangle ⚠️ */}
+          {/* F. ALERT / WARNING MODE: Angry Eyes > < */}
           {isAlert && (
             <>
-              <path d="M 140 76 L 180 126 L 100 126 Z" fill="none" stroke={mainGlowColor} strokeWidth="3.5" strokeLinejoin="round" />
-              <line x1="140" y1="92" x2="140" y2="110" stroke={mainGlowColor} strokeWidth="3.5" strokeLinecap="round" />
-              <circle cx="140" cy="118" r="2.5" fill={mainGlowColor} />
+              {/* Angular Angry Eyes > < */}
+              <path d="M 100 90 L 124 104 M 100 104 L 124 90" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" />
+              <path d="M 156 90 L 180 104 M 156 104 L 180 90" stroke={mainGlowColor} strokeWidth="4" strokeLinecap="round" />
+              {/* Frown Mouth */}
+              <path d="M 126 126 Q 140 118 154 126" stroke={mainGlowColor} strokeWidth="3.5" strokeLinecap="round" fill="none" />
             </>
           )}
 
-          {/* IDLE / DEFAULT: Standard Round Visor Eyes */}
+          {/* G. IDLE / NEUTRAL MODE: Glossy Alive Eyes with Pupil Reflection & Soft Smile */}
           {!isThinking && !isListening && !isSpeaking && !isHappy && !isGreeting && !isCompleted && !isAlert && (
             <>
-              <circle cx="112" cy="100" r="8" fill={mainGlowColor} />
-              <circle cx="168" cy="100" r="8" fill={mainGlowColor} />
-              <line x1="128" y1="122" x2="152" y2="122" stroke={mainGlowColor} strokeWidth="2.5" strokeLinecap="round" opacity="0.6" />
+              {/* Glossy Left Eye */}
+              <circle cx="112" cy="98" r="9.5" fill={mainGlowColor} />
+              <circle cx="112" cy="98" r="5" fill="#020617" opacity="0.45" />
+              <circle cx="109" cy="94" r="3" fill="#ffffff" />
+
+              {/* Glossy Right Eye */}
+              <circle cx="168" cy="98" r="9.5" fill={mainGlowColor} />
+              <circle cx="168" cy="98" r="5" fill="#020617" opacity="0.45" />
+              <circle cx="165" cy="94" r="3" fill="#ffffff" />
+
+              {/* Soft Friendly Smile Line */}
+              <path d="M 126 120 Q 140 127 154 120" stroke={mainGlowColor} strokeWidth="3" strokeLinecap="round" fill="none" opacity="0.95" />
             </>
           )}
         </g>
