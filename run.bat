@@ -11,17 +11,17 @@ if exist "backend\.venv\Scripts\python.exe" (
     goto end
 )
 
-:: 2. Check for system python
-where python >nul 2>nul
-if %ERRORLEVEL% equ 0 (
-    python run.py
-    goto end
-)
-
-:: 3. Check for python launcher 'py'
+:: 2. Check for python launcher 'py'
 where py >nul 2>nul
 if %ERRORLEVEL% equ 0 (
     py -3 run.py
+    goto end
+)
+
+:: 3. Check for system python
+where python >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    python run.py
     goto end
 )
 

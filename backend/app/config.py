@@ -7,7 +7,7 @@ Never hardcode secrets. Never commit .env.
 from functools import lru_cache
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, PrivateAttr
+from pydantic import Field, PrivateAttr, field_validator
 
 # Project root directory (linuxai/)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -57,6 +57,13 @@ class Settings(BaseSettings):
 
     # ── Database ─────────────────────────────────────────────────────────────
     database_url: str = Field(default=f"sqlite+aiosqlite:///{DEFAULT_DB_PATH}")
+
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        if v.startswith("sqlite:///"):
+            return v.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
+        return v
 
     # ── CORS ─────────────────────────────────────────────────────────────────
     cors_origins: str = Field(default="http://localhost:5173,http://localhost:3000")

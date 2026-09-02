@@ -44,12 +44,13 @@ function ProtectedLayout() {
       <Sidebar />
       <main className="flex-1 overflow-hidden relative">
         <Routes>
-          <Route path="/"           element={<VoiceAssistantPage />} />
-          <Route path="/dashboard"  element={<DashboardPage />} />
+          <Route path="/"           element={<DashboardPage />} />
+          <Route path="/dashboard"  element={<Navigate to="/" replace />} />
+          <Route path="/assistant"  element={<VoiceAssistantPage />} />
           <Route path="/terminal"   element={<TerminalPage />} />
-          <Route path="/chat"       element={<Navigate to="/" replace />} />
-          <Route path="/voice"      element={<Navigate to="/" replace />} />
-          <Route path="/ai-activity" element={<Navigate to="/" replace />} />
+          <Route path="/chat"       element={<Navigate to="/assistant" replace />} />
+          <Route path="/voice"      element={<Navigate to="/assistant" replace />} />
+          <Route path="/ai-activity" element={<Navigate to="/assistant" replace />} />
 
           <Route path="/monitor"    element={<MonitorPage />} />
           <Route path="/processes"  element={<ProcessesPage />} />

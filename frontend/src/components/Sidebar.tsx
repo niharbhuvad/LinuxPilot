@@ -11,8 +11,8 @@ import { sshApi } from '../services/api'
 import clsx from 'clsx'
 
 const navItems = [
-  { icon: Mic, label: 'AI Assitant', path: '/' },
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+  { icon: Mic, label: 'AI Assistant', path: '/assistant' },
   { icon: Terminal, label: 'Terminal Console', path: '/terminal' },
 
   { icon: Cpu, label: 'System Monitor', path: '/monitor' },

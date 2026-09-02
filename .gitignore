@@ -56,5 +56,5 @@ logs/
 ssh_saved_profiles.json
 
 backend/ssh_saved_profiles.json
-
-
+backend/ssh_config.json
+ssh_config.json

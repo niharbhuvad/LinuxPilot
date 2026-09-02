@@ -30,6 +30,7 @@ export interface AiActivityLog {
 export interface VoiceSettings {
   enabled: boolean
   language: string
+  selectedVoiceURI?: string
   voicePersona: 'vedic-soft' | 'standard-indian' | 'hindi' | 'default'
   speed: number
   volume: number
@@ -67,6 +68,32 @@ export interface SavedConversationItem {
 }
 
 export type AiMode = 'quick' | 'thinking' | 'deep-search'
+
+export interface LanguageOption {
+  code: string
+  name: string
+  nativeName: string
+  flag: string
+}
+
+export const SUPPORTED_LANGUAGES: LanguageOption[] = [
+  { code: 'en-IN', name: 'English (India)', nativeName: 'English (IN)', flag: '🇮🇳' },
+  { code: 'hi-IN', name: 'Hindi', nativeName: 'हिंदी', flag: '🇮🇳' },
+  { code: 'mr-IN', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳' },
+  { code: 'ta-IN', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳' },
+  { code: 'te-IN', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'gu-IN', name: 'Gujarati', nativeName: 'ગુજરાતી', flag: '🇮🇳' },
+  { code: 'bn-IN', name: 'Bengali', nativeName: 'বাংলা', flag: '🇮🇳' },
+  { code: 'kn-IN', name: 'Kannada', nativeName: 'ಕನ್ನಡ', flag: '🇮🇳' },
+  { code: 'ml-IN', name: 'Malayalam', nativeName: 'മലയാളം', flag: '🇮🇳' },
+  { code: 'en-US', name: 'English (US)', nativeName: 'English (US)', flag: '🇺🇸' },
+  { code: 'en-GB', name: 'English (UK)', nativeName: 'English (UK)', flag: '🇬🇧' },
+  { code: 'es-ES', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  { code: 'fr-FR', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'de-DE', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'ja-JP', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'zh-CN', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+]
 
 export interface VoiceAssistantContextType {
   voiceStatus: VoiceStatus
@@ -131,15 +158,14 @@ function getTimeGreeting(): { greeting: string; emoji: string; emotion: EmotionS
 function getWelcomeMessage(): string {
   const { greeting, emoji } = getTimeGreeting()
   const day = new Date().toLocaleDateString('en-IN', { weekday: 'long' })
-  return `${emoji} Namaste! ${greeting}!\n\nWelcome back to your AI Linux Administration Engine. I am your Vedic voice assistant — always here, always listening, always caring for your systems.\n\nToday is ${day}. I'm continuously monitoring your connected host for you. Just speak naturally or tap to ask me anything — from system health to service management.\n\nI never stop. I never forget our conversation. Let's keep your infrastructure in perfect harmony. 🙏`
+  return `${emoji} Namaste! ${greeting}!\n\nWelcome back to your AI Linux Administration Engine. I am your Vedic multi-lingual voice assistant — always listening, always caring for your systems in your preferred language.\n\nToday is ${day}. I'm continuously monitoring your connected host. Select your language from the top bar and just speak naturally or type any command! 🙏`
 }
 
 function getWelcomeSpokenText(): string {
   const { greeting } = getTimeGreeting()
   const day = new Date().toLocaleDateString('en-IN', { weekday: 'long' })
-  return `Namaste! ${greeting}! Welcome back. Today is ${day}. I am your Vedic AI Linux assistant, always ready to help. Your systems are being monitored. Just speak naturally to begin.`
+  return `Namaste! ${greeting}! Welcome back. Today is ${day}. I am your multi-lingual AI Linux assistant, ready to assist you. Just speak naturally to begin.`
 }
-
 
 export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [voiceStatus, setVoiceStatus] = useState<VoiceStatus>('idle')
@@ -194,12 +220,11 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
   const voiceStatusRef = useRef<VoiceStatus>('idle')
   const hasGreeted = useRef<boolean>(false)
   const healthAlertCooldown = useRef<number>(0)
-  // Track transcript in a ref so onend can read the latest value without abusing state updaters
   const transcriptRef = useRef<string>('')
-  // Prevent double-sends from React Strict Mode or speech recognition race conditions
   const sendLockRef = useRef<boolean>(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   const animFrameRef = useRef<number>(0)
+  const silenceTimerRef = useRef<any>(null)
 
   // ── Load saved conversations list ──
   const loadConversations = useCallback(async () => {
@@ -214,7 +239,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
         })))
       }
     } catch (e) {
-      // Chat API might be offline
+      // Chat API offline fallback
     }
   }, [])
 
@@ -261,107 +286,134 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     })
   }
 
-  // ── Indian voice selection ──
+  // ── Intelligent natural voice selection ──
   const getSelectedVoice = useCallback((): SpeechSynthesisVoice | null => {
     if (!('speechSynthesis' in window) || availableVoices.length === 0) return null
 
-    const indianVoices = availableVoices.filter(v =>
-      v.lang.includes('IN') ||
-      v.lang.includes('hi') ||
-      v.name.toLowerCase().includes('india') ||
-      v.name.toLowerCase().includes('heera') ||
-      v.name.toLowerCase().includes('neerja') ||
-      v.name.toLowerCase().includes('ravi') ||
-      v.name.toLowerCase().includes('swara') ||
-      v.name.toLowerCase().includes('kavya') ||
-      v.name.toLowerCase().includes('veena') ||
-      v.name.toLowerCase().includes('hindi')
-    )
-
-    if (voiceSettings.voicePersona === 'hindi') {
-      const hindiVoice = availableVoices.find(v => v.lang.startsWith('hi'))
-      if (hindiVoice) return hindiVoice
+    // 1. User explicitly picked a voice from dropdown
+    if (voiceSettings.selectedVoiceURI) {
+      const userChoice = availableVoices.find(v => v.voiceURI === voiceSettings.selectedVoiceURI || v.name === voiceSettings.selectedVoiceURI)
+      if (userChoice) return userChoice
     }
 
-    if (indianVoices.length > 0) {
-      const softVoice = indianVoices.find(v =>
-        v.name.toLowerCase().includes('heera') ||
-        v.name.toLowerCase().includes('neerja') ||
-        v.name.toLowerCase().includes('google')
-      )
-      return softVoice || indianVoices[0]
+    const currentLang = voiceSettings.language || 'en-IN'
+    const langPrefix = currentLang.split('-')[0].toLowerCase()
+
+    // Score voice by natural human voice markers (Natural / Neural / Online / Google vs legacy robotic SAPI)
+    const getHumanScore = (v: SpeechSynthesisVoice): number => {
+      const name = v.name.toLowerCase()
+      let score = 0
+      if (name.includes('natural')) score += 100
+      if (name.includes('neural')) score += 90
+      if (name.includes('online')) score += 80
+      if (name.includes('google')) score += 70
+      if (name.includes('apple') || name.includes('siri')) score += 60
+      if (name.includes('enhanced') || name.includes('premium')) score += 50
+      if (name.includes('david') || name.includes('zira') || name.includes('mark') || name.includes('desktop')) score -= 50
+      return score
     }
 
-    return availableVoices.find(v => v.lang === voiceSettings.language) || availableVoices[0] || null
-  }, [availableVoices, voiceSettings.language, voiceSettings.voicePersona])
+    // Filter matching voices by exact lang
+    const exactLangVoices = availableVoices.filter(v => v.lang.replace('_', '-').toLowerCase() === currentLang.toLowerCase())
+    if (exactLangVoices.length > 0) {
+      exactLangVoices.sort((a, b) => getHumanScore(b) - getHumanScore(a))
+      return exactLangVoices[0]
+    }
 
-  // ── Speak with emotion ──
+    // Filter by lang prefix (e.g. 'en', 'hi', 'es', 'fr')
+    const prefixLangVoices = availableVoices.filter(v => v.lang.toLowerCase().startsWith(langPrefix))
+    if (prefixLangVoices.length > 0) {
+      prefixLangVoices.sort((a, b) => getHumanScore(b) - getHumanScore(a))
+      return prefixLangVoices[0]
+    }
+
+    // Sort all available voices by human naturalness score
+    const sortedAll = [...availableVoices].sort((a, b) => getHumanScore(b) - getHumanScore(a))
+    return sortedAll[0] || availableVoices[0] || null
+  }, [availableVoices, voiceSettings.language, voiceSettings.selectedVoiceURI])
+
+  // ── Speak with natural human voice intonation & sentence chunking ──
   const speakText = useCallback((text: string, emotion: EmotionState = 'neutral') => {
     if (!voiceSettings.enabled || isMuted || !('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
 
     setEmotionState(emotion)
 
+    // Clean out code blocks, emojis (like 🙏, 🤖, etc.), markdown symbols, and URLs before TTS
     const cleanText = text
       .replace(/```[\s\S]*?```/g, '')
+      .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F600}-\u{1F64F}]|[\u{1F680}-\u{1F6FF}]|[\u{200D}]/gu, '')
       .replace(/[*_#`[\]()]/g, '')
       .replace(/https?:\/\/\S+/g, '')
       .replace(/\n{2,}/g, '. ')
+      .replace(/\s+/g, ' ')
       .trim()
 
     if (!cleanText) return
 
-    const utterance = new SpeechSynthesisUtterance(cleanText)
+    // Split text into natural sentence chunks for human cadence & breathing pauses
+    const sentences = cleanText
+      .split(/(?<=[.!?])\s+/)
+      .map(s => s.trim())
+      .filter(Boolean)
+
+    if (sentences.length === 0) return
+
     const selectedVoice = getSelectedVoice()
-    if (selectedVoice) utterance.voice = selectedVoice
+    setVoiceStatus('speaking')
 
-    // Emotional voice tuning
-    switch (emotion) {
-      case 'greeting':
-      case 'happy':
-        utterance.rate = voiceSettings.speed * 1.05
-        utterance.pitch = 1.15
-        break
-      case 'caring':
-        utterance.rate = voiceSettings.speed * 0.9
-        utterance.pitch = 0.95
-        break
-      case 'alert':
-        utterance.rate = voiceSettings.speed * 1.1
-        utterance.pitch = 1.2
-        break
-      case 'proud':
-        utterance.rate = voiceSettings.speed * 0.95
-        utterance.pitch = 1.05
-        break
-      default:
-        utterance.rate = voiceSettings.speed
-        utterance.pitch = 1.0
-    }
+    sentences.forEach((sentence, index) => {
+      const utterance = new SpeechSynthesisUtterance(sentence)
+      if (selectedVoice) utterance.voice = selectedVoice
 
-    utterance.volume = voiceSettings.volume
-    utterance.lang = selectedVoice?.lang || voiceSettings.language
-
-    utterance.onstart = () => setVoiceStatus('speaking')
-
-    utterance.onend = () => {
-      setVoiceStatus('idle')
-      setEmotionState('neutral')
-      if (voiceSettings.continuousMode && !manualStopRef.current) {
-        setTimeout(() => {
-          if (!isListeningRef.current && voiceStatusRef.current === 'idle') {
-            startListening()
-          }
-        }, 600)
+      // Human-like pitch & speed modulation
+      switch (emotion) {
+        case 'greeting':
+        case 'happy':
+          utterance.rate = voiceSettings.speed * 1.02
+          utterance.pitch = 1.06
+          break
+        case 'caring':
+          utterance.rate = voiceSettings.speed * 0.95
+          utterance.pitch = 0.98
+          break
+        case 'alert':
+          utterance.rate = voiceSettings.speed * 1.05
+          utterance.pitch = 1.10
+          break
+        case 'proud':
+          utterance.rate = voiceSettings.speed * 0.98
+          utterance.pitch = 1.02
+          break
+        default:
+          utterance.rate = voiceSettings.speed * 0.98
+          utterance.pitch = 1.0
       }
-    }
 
-    utterance.onerror = () => {
-      setVoiceStatus('idle')
-      setEmotionState('neutral')
-    }
+      utterance.volume = voiceSettings.volume
+      utterance.lang = selectedVoice?.lang || voiceSettings.language || 'en-IN'
 
-    window.speechSynthesis.speak(utterance)
+      if (index === sentences.length - 1) {
+        utterance.onend = () => {
+          setVoiceStatus('idle')
+          setEmotionState('neutral')
+          if (voiceSettings.continuousMode && !manualStopRef.current) {
+            setTimeout(() => {
+              if (!isListeningRef.current && voiceStatusRef.current === 'idle') {
+                startListening()
+              }
+            }, 600)
+          }
+        }
+
+        utterance.onerror = () => {
+          setVoiceStatus('idle')
+          setEmotionState('neutral')
+        }
+      }
+
+      window.speechSynthesis.speak(utterance)
+    })
   }, [voiceSettings, isMuted, getSelectedVoice])
 
   const stopSpeaking = () => {
@@ -421,7 +473,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
           status,
         })
 
-        // Voice alert for critical issues (with cooldown so it doesn't spam)
+        // Voice alert for critical issues
         const now = Date.now()
         if (status === 'critical' && voiceSettings.voiceNotifications && (now - healthAlertCooldown.current > 120000)) {
           healthAlertCooldown.current = now
@@ -451,7 +503,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
           }
         }
       } catch {
-        // Silently handle — system API might not be connected
+        // Silently handle offline API
       } finally {
         isPollingHealthRef.current = false
       }
@@ -462,7 +514,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     return () => clearInterval(interval)
   }, [voiceSettings.healthAlerts, voiceSettings.enabled, voiceSettings.voiceNotifications, isMuted])
 
-  // ── Execute a command ──
+  // ── Execute command ──
   const executeCommand = async (reqText: string, cmdToRun: string, riskTier: 'SAFE' | 'WARNING' | 'DANGEROUS') => {
     setVoiceStatus('executing')
     try {
@@ -485,11 +537,10 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     }
   }
 
-  // ── Send message (multi-turn continuous) ──
+  // ── Send message with multi-language awareness ──
   const sendMessage = async (userText: string) => {
     if (!userText.trim()) return
 
-    // Prevent duplicate sends via lock
     if (sendLockRef.current) return
     sendLockRef.current = true
 
@@ -504,7 +555,6 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     setVoiceStatus('thinking')
     setEmotionState('thinking')
 
-    // Ticker for dynamic emotion & step transitions during reasoning
     let stepTimer1: any, stepTimer2: any, stepTimer3: any
 
     if (aiMode === 'deep-search') {
@@ -519,7 +569,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
       }, 1500)
       stepTimer3 = setTimeout(() => {
         setEmotionState('proud')
-        setCurrentThoughtStep('✨ Formulating deep diagnosis & recommendation...')
+        setCurrentThoughtStep('✨ Formulating response...')
       }, 2300)
     } else if (aiMode === 'thinking') {
       setCurrentThoughtStep('🧠 Deep reasoning about system request...')
@@ -529,10 +579,10 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
       }, 800)
       stepTimer2 = setTimeout(() => {
         setEmotionState('caring')
-        setCurrentThoughtStep('💡 Synthesizing Vedic AI response...')
+        setCurrentThoughtStep('💡 Synthesizing AI response...')
       }, 1600)
     } else {
-      setCurrentThoughtStep('⚡ Parsing query & fetching quick metrics...')
+      setCurrentThoughtStep('⚡ Parsing query & fetching metrics...')
       stepTimer1 = setTimeout(() => {
         setEmotionState('neutral')
         setCurrentThoughtStep('🔍 Processing system command...')
@@ -549,8 +599,17 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
         provider === 'groq' ? savedSettings.groqApiKey :
         provider === 'openai' ? savedSettings.openaiApiKey : undefined
 
+      // Instruct AI to reply in the user's selected language
+      let formattedPrompt = userText
+      const currentLang = voiceSettings.language || 'en-IN'
+      if (currentLang !== 'en-US') {
+        const langObj = SUPPORTED_LANGUAGES.find(l => l.code === currentLang)
+        const langName = langObj ? `${langObj.name} (${langObj.nativeName})` : currentLang
+        formattedPrompt = `[Language Preference: Respond in ${langName} (${currentLang})]\n${userText}`
+      }
+
       const response = await chatApi.send({
-        message: userText,
+        message: formattedPrompt,
         conversation_id: conversationId,
         provider,
         model,
@@ -574,7 +633,6 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
       const riskTier = (data.risk_tier || 'SAFE') as 'SAFE' | 'WARNING' | 'DANGEROUS'
       const suggestedActions = data.suggested_actions
 
-      // Detect emotion from AI response
       let responseEmotion: EmotionState = 'neutral'
       const lowerText = aiText.toLowerCase()
       if (lowerText.includes('namaste') || lowerText.includes('welcome') || lowerText.includes('good morning') || lowerText.includes('good evening')) responseEmotion = 'greeting'
@@ -641,7 +699,6 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
       setVoiceStatus('idle')
       setEmotionState('neutral')
     } finally {
-      // Release the send lock after a short delay to prevent rapid re-fires
       setTimeout(() => { sendLockRef.current = false }, 300)
     }
   }
@@ -688,11 +745,11 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     if (voiceSettings.continuousMode && !manualStopRef.current) startListening()
   }
 
-  // ── Voice recognition (continuous) ──
+  // ── High performance continuous multi-language Speech Recognition ──
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognition) {
-      alert('Speech Recognition is not supported. Please use Chrome, Edge, or Safari.')
+      alert('Speech Recognition is not supported in this browser. Please use Chrome, Edge, or Safari.')
       return
     }
 
@@ -701,7 +758,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
 
     try {
       const recognition = new SpeechRecognition()
-      recognition.continuous = false
+      recognition.continuous = true
       recognition.interimResults = true
       recognition.lang = voiceSettings.language || 'en-IN'
 
@@ -712,7 +769,6 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
         setTranscript('')
         setEmotionState('neutral')
 
-        // Real microphone Web Audio API level monitoring
         try {
           if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
             navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
@@ -734,31 +790,52 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
                 animFrameRef.current = requestAnimationFrame(updateLevel)
               }
               updateLevel()
-            }).catch(() => {
-              // Permission denied or mic unavailable
-            })
+            }).catch(() => {})
           }
         } catch (e) {}
       }
 
       recognition.onresult = (event: any) => {
         let currentTranscript = ''
+        let hasFinal = false
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
           currentTranscript += event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            hasFinal = true
+          }
         }
-        transcriptRef.current = currentTranscript
-        setTranscript(currentTranscript)
+
+        const text = currentTranscript.trim()
+        if (text) {
+          transcriptRef.current = text
+          setTranscript(text)
+
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+
+          // Smart silence timer (800ms for final result, 1400ms for interim)
+          const timeoutMs = hasFinal ? 800 : 1400
+          silenceTimerRef.current = setTimeout(() => {
+            if (isListeningRef.current && transcriptRef.current.trim()) {
+              if (recognitionRef.current) {
+                try { recognitionRef.current.stop() } catch (e) {}
+              }
+            }
+          }, timeoutMs)
+        }
       }
 
       recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error)
+        console.warn('Speech recognition status:', event.error)
+        if (event.error === 'no-speech') return
         isListeningRef.current = false
-        if (event.error !== 'no-speech') setVoiceStatus('idle')
+        if (event.error !== 'aborted') setVoiceStatus('idle')
       }
 
       recognition.onend = () => {
         isListeningRef.current = false
-        // Read the final transcript from the ref (not from a state updater)
+        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+
         const finalText = transcriptRef.current.trim()
         transcriptRef.current = ''
         setTranscript('')
@@ -769,7 +846,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
           if (voiceSettings.continuousMode && !manualStopRef.current && voiceStatusRef.current === 'listening') {
             setTimeout(() => {
               if (!isListeningRef.current && voiceStatusRef.current === 'idle') startListening()
-            }, 400)
+            }, 500)
           } else {
             setVoiceStatus('idle')
           }
@@ -786,8 +863,9 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
 
   const stopListening = () => {
     manualStopRef.current = true
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
     if (recognitionRef.current && isListeningRef.current) {
-      recognitionRef.current.stop()
+      try { recognitionRef.current.stop() } catch (e) {}
       isListeningRef.current = false
     }
     if (audioContextRef.current) {
@@ -808,7 +886,7 @@ export const VoiceAssistantProvider: React.FC<{ children: React.ReactNode }> = (
     setMessages([{
       id: 'fresh-1',
       sender: 'assistant',
-      text: '🙏 Session renewed with fresh context. I am still here for you — ask me anything about your system.',
+      text: '🙏 Session renewed with fresh context. Ask me anything about your system.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       emotion: 'caring',
     }])

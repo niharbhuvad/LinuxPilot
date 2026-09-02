@@ -2,9 +2,9 @@ import React, { useRef, useEffect, useState } from 'react'
 import {
   Mic, MicOff, Volume2, VolumeX, Trash2, ShieldAlert, CheckCircle2,
   RefreshCw, Sliders, Heart, AlertTriangle, Zap, Activity, Maximize2,
-  Minimize2, Terminal, Send, Search, Brain, History, Sparkles, X, ChevronRight, MessageSquare
+  Minimize2, Terminal, Send, Search, Brain, History, Sparkles, X, ChevronRight, MessageSquare, Globe
 } from 'lucide-react'
-import { useVoiceAssistant, ChatMessage, AiMode } from '../context/VoiceAssistantContext'
+import { useVoiceAssistant, ChatMessage, AiMode, SUPPORTED_LANGUAGES } from '../context/VoiceAssistantContext'
 import ParticleSphere from '../components/ParticleSphere'
 import clsx from 'clsx'
 
@@ -243,13 +243,13 @@ export default function VoiceAssistantPage() {
     voiceStatus, emotionState,
     startListening, stopListening,
     isMuted, setIsMuted,
-    messages, sendMessage, transcript,
+    messages, sendMessage, transcript, speakText,
     clearConversation,
     pendingApproval, approveCommand, cancelCommand,
     voiceSettings, updateSettings,
     systemHealth,
     aiMode, setAiMode, audioLevel, currentThoughtStep,
-    conversations, loadConversations, selectConversation
+    conversations, loadConversations, selectConversation, availableVoices
   } = useVoiceAssistant()
 
   const chatEndRef = useRef<HTMLDivElement>(null)
@@ -303,12 +303,14 @@ export default function VoiceAssistantPage() {
     }
   }
 
+  const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === voiceSettings.language) || SUPPORTED_LANGUAGES[0]
+
   const statusConfig: Record<string, { title: string; subtitle: string }> = {
-    idle:      { title: 'LinuxAI Voice', subtitle: 'Speak now or type a command' },
-    listening: { title: 'Listening...', subtitle: 'Speak now or type a command' },
+    idle:      { title: 'LinuxAI Voice', subtitle: `Ready in ${currentLangObj.flag} ${currentLangObj.nativeName} • Speak or type command` },
+    listening: { title: 'Listening...', subtitle: `Listening in ${currentLangObj.flag} ${currentLangObj.nativeName}... Speak now!` },
     thinking:  { title: 'Analyzing...', subtitle: 'Reasoning about your request...' },
     executing: { title: 'Executing...', subtitle: 'Running Linux command on server...' },
-    speaking:  { title: 'Speaking...', subtitle: 'Vedic voice response active' },
+    speaking:  { title: 'Speaking Answer', subtitle: `Speaking in ${currentLangObj.flag} ${currentLangObj.nativeName}...` },
     completed: { title: 'Completed', subtitle: 'Task finished successfully' },
     greeting:  { title: 'Namaste 🙏', subtitle: 'Welcome to AI Linux Assistant' },
   }
@@ -337,6 +339,22 @@ export default function VoiceAssistantPage() {
         </div>
 
         <div className="flex items-center gap-1.5">
+          {/* Multi-language Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 hover:border-cyan-500/40 rounded-lg px-2 py-1 text-[11px] font-mono text-cyan-300 transition-all">
+            <Globe className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+            <select
+              value={voiceSettings.language}
+              onChange={(e) => updateSettings({ language: e.target.value })}
+              className="bg-transparent text-slate-200 outline-none cursor-pointer text-[11px] font-medium"
+            >
+              {SUPPORTED_LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code} className="bg-slate-900 text-slate-200">
+                  {lang.flag} {lang.nativeName} ({lang.name})
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             onClick={() => {
               if (!showHistoryDrawer) loadConversations()
@@ -385,6 +403,28 @@ export default function VoiceAssistantPage() {
       {/* ── Settings Drawer ── */}
       {showSettings && (
         <div className="border-b border-cyan-950/50 px-5 py-2 bg-[#080d1b] flex flex-wrap items-center gap-4 shrink-0 z-20">
+          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+            <span>Voice Engine:</span>
+            <select
+              value={voiceSettings.selectedVoiceURI || ''}
+              onChange={(e) => updateSettings({ selectedVoiceURI: e.target.value })}
+              className="bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-cyan-300 text-xs outline-none focus:border-cyan-500 max-w-[210px] truncate"
+            >
+              <option value="">✨ Auto (Best Human Voice)</option>
+              {availableVoices.map((v) => (
+                <option key={v.voiceURI} value={v.voiceURI} className="bg-slate-900 text-slate-200">
+                  {v.name.includes('Natural') || v.name.includes('Neural') || v.name.includes('Google') || v.name.includes('Online') ? '✨ ' : ''}
+                  {v.name} ({v.lang})
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => speakText('Hello Mahesh! Testing natural human voice output.', 'happy')}
+              className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/40 text-cyan-300 text-[10px] font-mono hover:bg-cyan-900/60 cursor-pointer"
+            >
+              🔊 Test Voice
+            </button>
+          </div>
           <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
             <span>Persona:</span>
             <select
@@ -661,7 +701,18 @@ export default function VoiceAssistantPage() {
                       <span className={clsx('text-[11px] font-mono font-bold', msg.sender === 'user' ? 'text-cyan-400' : emotionColors[msg.emotion || 'neutral'])}>
                         {msg.sender === 'user' ? '🎤 You' : `${emotionEmojis[msg.emotion || 'neutral']} AI Assistant`}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500">{msg.timestamp}</span>
+                      <div className="flex items-center gap-1.5">
+                        {msg.sender === 'assistant' && (
+                          <button
+                            onClick={() => speakText(msg.text, msg.emotion)}
+                            title="Speak answer out loud in active language"
+                            className="p-1 rounded-md bg-slate-800/60 hover:bg-cyan-950/60 text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer border border-slate-700/40"
+                          >
+                            <Volume2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <span className="text-[10px] font-mono text-slate-500">{msg.timestamp}</span>
+                      </div>
                     </div>
 
                     {/* Formatted Markdown Output */}
