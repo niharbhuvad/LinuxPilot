@@ -307,11 +307,11 @@ export default function VoiceAssistantPage() {
   const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === voiceSettings.language) || SUPPORTED_LANGUAGES[0]
 
   const statusConfig: Record<string, { title: string; subtitle: string }> = {
-    idle: { title: 'LinuxAI Voice', subtitle: `Ready in ${currentLangObj.flag} ${currentLangObj.nativeName} • Speak or type command` },
-    listening: { title: 'Listening...', subtitle: `Listening in ${currentLangObj.flag} ${currentLangObj.nativeName}... Speak now!` },
+    idle: { title: 'LinuxAI Voice', subtitle: `Ready in ${currentLangObj.nativeName} • Speak or type command` },
+    listening: { title: 'Listening...', subtitle: `Listening in ${currentLangObj.nativeName}... Speak now!` },
     thinking: { title: 'Analyzing...', subtitle: 'Reasoning about your request...' },
     executing: { title: 'Executing...', subtitle: 'Running Linux command on server...' },
-    speaking: { title: 'Speaking Answer', subtitle: `Speaking in ${currentLangObj.flag} ${currentLangObj.nativeName}...` },
+    speaking: { title: 'Speaking Answer', subtitle: `Speaking in ${currentLangObj.nativeName}...` },
     completed: { title: 'Completed', subtitle: 'Task finished successfully' },
     greeting: { title: 'Namaste 🙏', subtitle: 'Welcome to AI Linux Assistant' },
   }
@@ -350,7 +350,7 @@ export default function VoiceAssistantPage() {
             >
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <option key={lang.code} value={lang.code} className="bg-slate-900 text-slate-200">
-                  {lang.flag} {lang.nativeName} ({lang.name})
+                  {lang.nativeName} ({lang.name})
                 </option>
               ))}
             </select>
