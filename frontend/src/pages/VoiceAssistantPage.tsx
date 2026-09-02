@@ -508,43 +508,117 @@ export default function VoiceAssistantPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-cyan-600/[0.06] blur-[140px] pointer-events-none" />
           <div className="absolute top-1/2 left-[55%] -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-pink-600/[0.05] blur-[120px] pointer-events-none" />
 
-          {/* 1. Title + Glowing Progress Slider + Subtitle (Exact Match to Reference Image) */}
-          <div className="relative z-10 flex flex-col items-center text-center shrink-0">
-            <h1 className={clsx(
-              'text-2xl sm:text-3xl font-semibold tracking-tight transition-colors duration-500',
-              isListening ? 'text-cyan-300 drop-shadow-[0_0_25px_rgba(0,240,255,0.5)]' :
-              isThinking ? 'text-purple-300 drop-shadow-[0_0_20px_rgba(139,92,246,0.4)]' :
-              isSpeaking ? 'text-pink-300 drop-shadow-[0_0_20px_rgba(236,72,153,0.4)]' :
-              'text-cyan-200 drop-shadow-[0_0_15px_rgba(0,200,255,0.3)]'
-            )}>
-              {currentStatus.title}
-            </h1>
+          {/* 1. Futuristic LinuxPilot Machine Status Header (Unique Cyberpunk HUD Look) */}
+          <div className="relative z-10 flex flex-col items-center text-center shrink-0 w-full max-w-md">
 
-            {/* Glowing Audio Slider / Progress Track */}
-            <div className="mt-3.5 w-56 sm:w-64 h-[5px] bg-slate-900/90 rounded-full relative overflow-visible border border-slate-800/60">
-              <div
-                className={clsx(
-                  'absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-all duration-[60ms]',
-                  isListening ? 'bg-cyan-400 shadow-[0_0_14px_#00f0ff]' : 'bg-slate-500 shadow-none'
-                )}
-                style={{ left: `calc(${sliderPosition}% - 6px)` }}
-              />
-              <div
-                className={clsx(
-                  'h-full rounded-full transition-all duration-[60ms]',
-                  isListening ? 'bg-gradient-to-r from-cyan-500/70 to-cyan-400' : 'bg-slate-700/40'
-                )}
-                style={{ width: `${sliderPosition}%` }}
-              />
+            {/* Top Cybernetic Status Badge */}
+            <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/90 border border-cyan-500/30 shadow-[0_0_15px_rgba(0,240,255,0.15)] text-[10px] font-mono tracking-widest text-cyan-400 uppercase">
+              <span className={clsx('w-1.5 h-1.5 rounded-full animate-ping',
+                isListening ? 'bg-cyan-400 shadow-[0_0_8px_#00f0ff]' :
+                isThinking ? 'bg-purple-400 shadow-[0_0_8px_#a855f7]' :
+                isSpeaking ? 'bg-pink-400 shadow-[0_0_8px_#ec4899]' :
+                isExecuting ? 'bg-amber-400 shadow-[0_0_8px_#f59e0b]' : 'bg-emerald-400'
+              )} />
+              <span>SYS.NEURAL_LINK // {isThinking ? 'AI_REASONING' : isSpeaking ? 'VOICE_TALKING' : isListening ? 'SPEECH_TRACKING' : isExecuting ? 'KERNEL_EXEC' : 'ONLINE'}</span>
+              <span className="text-slate-600">|</span>
+              <span className={clsx('font-bold flex items-center gap-1', emotionColors[emotionState || 'neutral'])}>
+                {emotionEmojis[emotionState || 'neutral']} {emotionState.toUpperCase()}
+              </span>
             </div>
 
-            {/* Subtitle / Dynamic Thought Ticker */}
-            <p className={clsx(
-              'mt-2 text-[11px] sm:text-xs tracking-wide max-w-[320px] transition-all font-mono',
-              currentThoughtStep ? 'text-purple-300 font-bold animate-pulse' : 'text-slate-400'
+            {/* Main Futuristic Title */}
+            <h1 className={clsx(
+              'text-2xl sm:text-3xl font-black font-mono tracking-tight transition-all duration-500 flex items-center justify-center gap-2',
+              isListening ? 'text-cyan-300 drop-shadow-[0_0_25px_rgba(0,240,255,0.6)]' :
+              isThinking ? 'text-purple-300 drop-shadow-[0_0_25px_rgba(168,85,247,0.6)]' :
+              isSpeaking ? 'text-pink-300 drop-shadow-[0_0_25px_rgba(236,72,153,0.6)]' :
+              isExecuting ? 'text-amber-300 drop-shadow-[0_0_25px_rgba(245,158,11,0.6)]' :
+              'text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-teal-200 to-cyan-400 drop-shadow-[0_0_20px_rgba(0,240,255,0.35)]'
             )}>
-              {currentThoughtStep ? currentThoughtStep : (transcript && isListening ? `"${transcript}"` : currentStatus.subtitle)}
-            </p>
+              <Terminal className="w-6 h-6 text-cyan-400 animate-pulse" />
+              <span>LinuxAI Voice</span>
+            </h1>
+
+            {/* Futuristic Sci-Fi Scanning HUD Slider Track */}
+            <div className="mt-3 w-64 sm:w-80 flex items-center gap-2">
+              <span className="text-[9px] font-mono text-cyan-500/70 font-bold shrink-0">[ HUD ]</span>
+              <div className="flex-1 h-[6px] bg-slate-950/90 rounded-full relative overflow-visible border border-cyan-500/40 shadow-[0_0_12px_rgba(0,240,255,0.2)]">
+                {/* Laser scan node */}
+                <div
+                  className={clsx(
+                    'absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full transition-all duration-[60ms] z-10 flex items-center justify-center',
+                    isListening ? 'bg-cyan-400 shadow-[0_0_18px_#00f0ff]' :
+                    isThinking ? 'bg-purple-400 shadow-[0_0_18px_#a855f7]' :
+                    isSpeaking ? 'bg-pink-400 shadow-[0_0_18px_#ec4899]' :
+                    'bg-cyan-400 shadow-[0_0_10px_#00f0ff]'
+                  )}
+                  style={{ left: `calc(${sliderPosition}% - 8px)` }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                </div>
+
+                {/* Progress bar line */}
+                <div
+                  className={clsx(
+                    'h-full rounded-full transition-all duration-[60ms]',
+                    isListening ? 'bg-gradient-to-r from-cyan-600 via-cyan-400 to-teal-300 shadow-[0_0_10px_#00f0ff]' :
+                    isThinking ? 'bg-gradient-to-r from-purple-600 via-purple-400 to-pink-400 shadow-[0_0_10px_#a855f7]' :
+                    isSpeaking ? 'bg-gradient-to-r from-pink-600 via-rose-400 to-amber-300 shadow-[0_0_10px_#ec4899]' :
+                    'bg-gradient-to-r from-cyan-600/50 to-cyan-400/80'
+                  )}
+                  style={{ width: `${sliderPosition}%` }}
+                />
+              </div>
+              <span className="text-[9px] font-mono text-cyan-500/70 font-bold shrink-0">[ {Math.round(sliderPosition)}% ]</span>
+            </div>
+
+            {/* Dynamic Futuristic Machine Status Telemetry Board */}
+            <div className="mt-3 w-full px-3.5 py-2.5 rounded-2xl bg-[#080e1e]/90 border border-cyan-500/30 backdrop-blur-md shadow-xl flex flex-col items-center">
+              <div className="flex items-center gap-2 text-[11px] font-mono text-cyan-300 font-bold mb-0.5 tracking-wide">
+                {isListening ? (
+                  <span className="flex items-center gap-1.5 text-cyan-300 animate-pulse">
+                    <Mic className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>MACHINE IS TRACKING USER SPEECH...</span>
+                  </span>
+                ) : isThinking ? (
+                  <span className="flex items-center gap-1.5 text-purple-300 animate-pulse">
+                    <Brain className="w-3.5 h-3.5 text-purple-400 animate-spin" style={{ animationDuration: '3s' }} />
+                    <span>MACHINE IS REASONING & ANALYZING...</span>
+                  </span>
+                ) : isSpeaking ? (
+                  <span className="flex items-center gap-1.5 text-pink-300 animate-pulse">
+                    <Sparkles className="w-3.5 h-3.5 text-pink-400" />
+                    <span>MACHINE IS SPEAKING & TALKING...</span>
+                  </span>
+                ) : isExecuting ? (
+                  <span className="flex items-center gap-1.5 text-amber-300 animate-pulse">
+                    <Zap className="w-3.5 h-3.5 text-amber-400" />
+                    <span>MACHINE IS EXECUTING KERNEL ACTION...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>MACHINE READY IN {currentLangObj.flag} {currentLangObj.nativeName}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Subtitle / Live Typing Thought Ticker */}
+              <p className={clsx(
+                'text-[11px] font-mono max-w-[340px] leading-relaxed transition-all mt-0.5',
+                currentThoughtStep ? 'text-purple-300 font-bold animate-pulse' :
+                isListening && transcript ? 'text-cyan-200 font-semibold' : 'text-slate-400'
+              )}>
+                {currentThoughtStep ? (
+                  <span>{currentThoughtStep} <span className="animate-ping">_</span></span>
+                ) : transcript && isListening ? (
+                  <span>"{transcript}" <span className="animate-pulse">|</span></span>
+                ) : (
+                  <span>{currentStatus.subtitle}</span>
+                )}
+              </p>
+            </div>
+
           </div>
 
           {/* 2. Particle Sphere */}
